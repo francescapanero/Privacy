@@ -1,11 +1,11 @@
-setwd("~/Documents/Privacy")
+setwd("~/Documents/Privacy_git/Privacy")
 
 library(tidyverse)
 library(dplyr)
 library(knitr)
 library(poweRlaw)
 
-source("functionsTommy.R")
+source("functions.R")
 
 
 # -------------
