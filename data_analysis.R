@@ -1,6 +1,7 @@
 setwd("~/Documents/Privacy_git/Privacy")
 
 library(tidyverse)
+library(plyr)
 library(dplyr)
 library(knitr)
 library(poweRlaw)
@@ -76,8 +77,36 @@ prova2sub <-prova2[prova2$AGE > 20,]
 prova2sub <- prova2sub %>% mutate(id = 1:n())
 
 # ------------
-# Trying different cross-classifications
+# Trying different cross-classifications (you'll see a lot of commented attemps...I think the best one is the one with city,
+# the first one (the only one uncommented))
 # ------------
+
+
+# FINER: CITY, everything else same
+length(levels(as.factor(prova2sub$CITY))) # 103
+# index of the uniques in the population
+ind_uniq <- prova2sub %>% 
+  dplyr::group_by(CITY, HHINCOME, VALUEH, FAMSIZE, NCHILD, SEX, AGE, MARST, RACE,
+           HCOVANY, EDUC, SCHLTYPE, EMPSTAT, OCC, 
+           INCTOT, FTOTINC, VETSTAT) %>% dplyr::mutate(count=dplyr::n()) %>% 
+  filter(count == 1) %>% dplyr::select(id) 
+id_uniq <- ind_uniq$id
+
+# # run these only if you want to get the plots of the frequencies counts
+# tablecity <- prova2sub %>% group_by(CITY, HHINCOME, VALUEH, FAMSIZE, NCHILD, SEX, AGE, MARST, RACE,
+#                                     HCOVANY, EDUC, SCHLTYPE, EMPSTAT, OCC, 
+#                                     INCTOT, FTOTINC, VETSTAT) %>% summarize(count=n())
+# freq_city <- tablecity$count
+# tablefreq_city <- table(freq_city)
+# tablefreq_city <- data.frame("frequency"=as.factor(names(tablefreq_city)), "count"=as.numeric(tablefreq_city))
+# ggplot(data=tablefreq_city, aes(reorder(frequency, -count), log(count))) + geom_col() + ggtitle('City log frequencies counts (61 classes)')
+# m_pl = displ$new(freq_city)
+# est = estimate_xmin(m_pl)
+# m_pl$setXmin(est)
+# plot(m_pl, main="US 2018 city (61 classes)") 
+# lines(m_pl, col=2, main="US 2018 city (61 classes)")
+
+
 
 # # "COARSER": region and not state or city, 
 # # race and not raced, 
@@ -104,31 +133,6 @@ prova2sub <- prova2sub %>% mutate(id = 1:n())
 # tablefreq_state <- table(freq_state)
 # tablefreq_state <- data.frame("frequency"=as.factor(names(tablefreq_state)), "count"=as.numeric(tablefreq_state))
 # ggplot(data=tablefreq_state, aes(reorder(frequency, -count), log(count))) + geom_col() + ggtitle('State log frequencies counts')
-
-
-# FINER: CITY, everything else same
-length(levels(as.factor(prova2sub$CITY))) # 103
-# index of the uniques in the population
-ind_uniq <- prova2sub %>% 
-            group_by(CITY, HHINCOME, VALUEH, FAMSIZE, NCHILD, SEX, AGE, MARST, RACE,
-                HCOVANY, EDUC, SCHLTYPE, EMPSTAT, OCC, 
-                INCTOT, FTOTINC, VETSTAT) %>% mutate(count=n()) %>% 
-            filter(count == 1) %>% select(id) 
-id_uniq <- ind_uniq$id
-
-# run these only if you want to get the plots of the frequencies counts
-tablecity <- prova2sub %>% group_by(CITY, HHINCOME, VALUEH, FAMSIZE, NCHILD, SEX, AGE, MARST, RACE,
-                                    HCOVANY, EDUC, SCHLTYPE, EMPSTAT, OCC, 
-                                    INCTOT, FTOTINC, VETSTAT) %>% summarize(count=n())
-freq_city <- tablecity$count
-tablefreq_city <- table(freq_city)
-tablefreq_city <- data.frame("frequency"=as.factor(names(tablefreq_city)), "count"=as.numeric(tablefreq_city))
-ggplot(data=tablefreq_city, aes(reorder(frequency, -count), log(count))) + geom_col() + ggtitle('City log frequencies counts (61 classes)')
-m_pl = displ$new(freq_city)
-est = estimate_xmin(m_pl)
-m_pl$setXmin(est)
-plot(m_pl, main="US 2018 city (61 classes)") 
-lines(m_pl, col=2, main="US 2018 city (61 classes)")
 
 
 # # FINER: city and raced
@@ -208,6 +212,11 @@ lines(m_pl, col=2, main="US 2018 city (61 classes)")
 
 
 
+
+
+
+
+
 # ---------------
 # Now let's take freq_city and let's take some samples
 # ---------------
@@ -230,7 +239,7 @@ ind_uniqsamp0 <- sample_n0 %>%
   dplyr::group_by(CITY, HHINCOME, VALUEH, FAMSIZE, NCHILD, SEX, AGE, MARST, RACE,
            HCOVANY, EDUC, SCHLTYPE, EMPSTAT, OCC, 
            INCTOT, FTOTINC, VETSTAT) %>% dplyr::mutate(count=dplyr::n()) %>% 
-  filter(count ==1) %>% select(id) 
+  filter(count ==1) %>% dplyr::select(id) 
 id_uniqsamp0 <- ind_uniqsamp0$id
 
 # compute tau_1 true
@@ -284,14 +293,14 @@ n1 = as.integer(percentage1*N)
 ind1 <- sample(1:N, n1, replace = FALSE)
 sample_n1 <- prova2sub[ind1,]
 
-table_n1 <- sample_n1 %>% group_by(CITY, HHINCOME, VALUEH, FAMSIZE, NCHILD, SEX, AGE, MARST, RACE,
+table_n1 <- sample_n1 %>% dplyr::group_by(CITY, HHINCOME, VALUEH, FAMSIZE, NCHILD, SEX, AGE, MARST, RACE,
                                     HCOVANY, EDUCD, SCHLTYPE, EMPSTAT, OCC, 
-                                    INCTOT, FTOTINC, VETSTAT) %>% summarize(count=n())
+                                    INCTOT, FTOTINC, VETSTAT) %>% dplyr::summarize(count=dplyr::n())
 ind_uniqsamp <- sample_n1 %>%
-  group_by(CITY, HHINCOME, VALUEH, FAMSIZE, NCHILD, SEX, AGE, MARST, RACE,
+  dplyr::group_by(CITY, HHINCOME, VALUEH, FAMSIZE, NCHILD, SEX, AGE, MARST, RACE,
                           HCOVANY, EDUC, SCHLTYPE, EMPSTAT, OCC, 
-                          INCTOT, FTOTINC, VETSTAT) %>% mutate(count=n()) %>% 
-  filter(count ==1) %>% select(id) 
+                          INCTOT, FTOTINC, VETSTAT) %>% dplyr::mutate(count=dplyr::n()) %>% 
+  filter(count ==1) %>% dplyr::select(id) 
 id_uniqsamp <- ind_uniqsamp$id
 
 # compute tau_1 true
@@ -344,9 +353,9 @@ n2 = as.integer(0.20*N)
 ind2 <- sample(1:N, n2, replace = FALSE)
 sample_n2 <- prova2sub[ind2,]
 sample_n2 <- bind_cols(sample_n2, 'original_id' = ind2)
-table_n2 <- sample_n2 %>% group_by(CITY, HHINCOME, VALUEH, FAMSIZE, NCHILD, SEX, AGE, MARST, RACE,
+table_n2 <- sample_n2 %>% dplyr::group_by(CITY, HHINCOME, VALUEH, FAMSIZE, NCHILD, SEX, AGE, MARST, RACE,
                                    HCOVANY, EDUCD, SCHLTYPE, EMPSTAT, OCC, 
-                                   INCTOT, FTOTINC, VETSTAT) %>% summarize(count=n())
+                                   INCTOT, FTOTINC, VETSTAT) %>% dplyr::summarize(count=dplyr::n())
 freq_n2 <- table_n2$count
 tablefreq_n2 <- table(freq_n2)
 tablefreq_n2 <- data.frame("frequency"=as.factor(names(tablefreq_n2)), "count"=as.numeric(tablefreq_n2))
@@ -358,10 +367,10 @@ plot(m_pl, main="sample city 20%")
 lines(m_pl, col=2, main="sample city 20%")
 
 ind2_uniqsamp <- sample_n2 %>%
-  group_by(CITY, HHINCOME, VALUEH, FAMSIZE, NCHILD, SEX, AGE, MARST, RACE,
+  dplyr::group_by(CITY, HHINCOME, VALUEH, FAMSIZE, NCHILD, SEX, AGE, MARST, RACE,
            HCOVANY, EDUC, SCHLTYPE, EMPSTAT, OCC, 
-           INCTOT, FTOTINC, VETSTAT) %>% mutate(count=n()) %>% 
-  filter(count==1) %>% select(original_id) 
+           INCTOT, FTOTINC, VETSTAT) %>% dplyr::mutate(count=dplyr::n()) %>% 
+  filter(count==1) %>% dplyr::select(original_id) 
 id2_uniqsamp <- ind2_uniqsamp$original_id
 
 # tau1_true
