@@ -10,7 +10,7 @@ source("functions.R")
 
 # California dataset ----------------------------------
 
-cal1  <- read.table("Dati/campione_cal_1.txt", header=FALSE)
+cal1  <- read.table("data/campione_cal_1.txt", header=FALSE)
 
 # Summary of the frequencies
 freqcal1      <- table(cal1)
@@ -26,7 +26,7 @@ m_pl$setXmin(est)
 plot(m_pl) 
 lines(m_pl, col=2)
 
-# cal2 <- read.table("Dati/campione_cal_2.txt", header=FALSE)
+# cal2 <- read.table("data/campione_cal_2.txt", header=FALSE)
 # freqcal2 <- table(cal2)
 # tablefreqcal2 <- data.frame("frequency"=as.integer(names(freqcal2)), "count"=as.numeric(freqcal2))
 # ggplot(data=tablefreqcal2, aes(reorder(frequency, -count), log(count))) + geom_col() + ggtitle('Cal2 log freq count')
@@ -36,7 +36,7 @@ lines(m_pl, col=2)
 # plot(m_pl) 
 # lines(m_pl, col=2)
 # 
-# cal3 <- read.table("Dati/campione_cal_3.txt", header=FALSE)
+# cal3 <- read.table("data/campione_cal_3.txt", header=FALSE)
 # freqcal3 <- table(cal3)
 # tablefreqcal3 <- data.frame("frequency"=as.integer(names(freqcal3)), "count"=as.numeric(freqcal3))
 # ggplot(data=tablefreqcal3, aes(reorder(frequency, -count), log(count))) + geom_col() + ggtitle('Cal3 log freq count')
@@ -46,7 +46,7 @@ lines(m_pl, col=2)
 # plot(m_pl) 
 # lines(m_pl, col=2)
 # 
-# cal4 <- read.table("Dati/campione_cal_4.txt", header=FALSE)
+# cal4 <- read.table("data/campione_cal_4.txt", header=FALSE)
 # freqcal4 <- table(cal4)
 # tablefreqcal4 <- data.frame("frequency"=as.integer(names(freqcal4)), "count"=as.numeric(freqcal4))
 # ggplot(data=tablefreqcal4, aes(reorder(frequency, -count), log(count))) + geom_col() + ggtitle('Cal4 log freq count')
@@ -56,7 +56,7 @@ lines(m_pl, col=2)
 # plot(m_pl) 
 # lines(m_pl, col=2)
 # 
-# cal5 <- read.table("Dati/campione_cal_5.txt", header=FALSE)
+# cal5 <- read.table("data/campione_cal_5.txt", header=FALSE)
 # freqcal5 <- table(cal5)
 # tablefreqcal5 <- data.frame("frequency"=as.integer(names(freqcal5)), "count"=as.numeric(freqcal5))
 # ggplot(data=tablefreqcal5, aes(reorder(frequency, -count), log(count))) + geom_col() + ggtitle('Cal5 log freq count')
@@ -71,7 +71,7 @@ lines(m_pl, col=2)
 # IPMUS DATA
 # -------------
 
-prova2 <- read.csv("Dati/usa_00002.csv", header = T)
+prova2 <- read.csv("data/usa_00002.csv", header = T)
 head(prova2)
 prova2sub <-prova2[prova2$AGE > 20,]
 prova2sub <- prova2sub %>% dplyr::mutate(id = 1:n())
@@ -83,28 +83,43 @@ prova2sub <- prova2sub %>% dplyr::mutate(id = 1:n())
 
 
 # FINER: CITY, everything else same
-length(levels(as.factor(prova2sub$CITY))) # 103
-# index of the uniques in the population
-id_uniq <- prova2sub %>% 
-  add_count(CITY, HHINCOME, VALUEH, FAMSIZE, NCHILD, SEX, AGE, MARST, RACE,
-           HCOVANY, EDUC, SCHLTYPE, EMPSTAT, OCC, 
-           INCTOT, FTOTINC, VETSTAT) %>% filter(n==1) %>% select(id) 
+
+# index of the uniques in the population. Do not uncomment the following lines!
+# You can directly download the file of the frequencies just after these.
+
+# id_uniq <- prova2sub %>% 
+#   add_count(CITY, HHINCOME, VALUEH, FAMSIZE, NCHILD, SEX, AGE, MARST, RACE,
+#            HCOVANY, EDUC, SCHLTYPE, EMPSTAT, OCC, 
+#            INCTOT, FTOTINC, VETSTAT) %>% filter(n==1) %>% select(id) 
+# id_uniq <- id_uniq$id
+# write.table(id_uniq, "data/id_uniq.txt", sep="\t", col.names="id")
+
+id_uniq <- read.table("data/id_uniq.txt", header=TRUE)
 id_uniq <- id_uniq$id
 
-# # run these only if you want to get the plots of the frequencies counts
-# table_city <- prova2sub %>% 
+
+# Frequencies counts and plots.
+# do not uncomment these following lines! 
+# You can directly download the file of the frequencies just after these.
+
+# table_city <- prova2sub %>%
 #   add_count(CITY, HHINCOME, VALUEH, FAMSIZE, NCHILD, SEX, AGE, MARST, RACE,
-#             HCOVANY, EDUC, SCHLTYPE, EMPSTAT, OCC, 
+#             HCOVANY, EDUC, SCHLTYPE, EMPSTAT, OCC,
 #             INCTOT, FTOTINC, VETSTAT)
-# freq_city <- tablecity$n
-# tablefreq_city <- table(freq_city)
-# tablefreq_city <- data.frame("frequency"=as.factor(names(tablefreq_city)), "count"=as.numeric(tablefreq_city))
-# ggplot(data=tablefreq_city, aes(reorder(frequency, -n), log(n))) + geom_col() + ggtitle('City log frequencies counts (61 classes)')
-# m_pl = displ$new(freq_city)
-# est = estimate_xmin(m_pl)
-# m_pl$setXmin(est)
-# plot(m_pl, main="US 2018 city (61 classes)") 
-# lines(m_pl, col=2, main="US 2018 city (61 classes)")
+# freq_city <- table_city$n
+# write.table(freq_city, "data/freq_city.txt", sep="\t", col.names="count")
+
+freq_city <- read.table("data/freq_city.txt", header=TRUE)
+freq_city <- freq_city$count
+
+tablefreq_city <- table(freq_city)
+tablefreq_city <- data.frame("frequency"=as.factor(names(tablefreq_city)), "count"=as.numeric(tablefreq_city))
+ggplot(data=tablefreq_city, aes(reorder(frequency, -count), log(count))) + geom_col() + ggtitle('City log frequencies counts (61 classes)')
+m_pl = displ$new(freq_city)
+est = estimate_xmin(m_pl)
+m_pl$setXmin(est)
+plot(m_pl, main="US 2018 city (61 classes)")
+lines(m_pl, col=2, main="US 2018 city (61 classes)")
 
 
 
@@ -217,6 +232,9 @@ id_uniq <- id_uniq$id
 
 
 
+
+
+
 # ---------------
 # Now let's take freq_city and let's take some samples
 # ---------------
@@ -225,22 +243,22 @@ id_uniq <- id_uniq$id
 # Sample 1% 
 # ---------------
 
-N = dim(prova2sub)[1]
-percentage = 0.01
-n = as.integer(percentage*N)
-ind <- sample(1:N, n, replace = FALSE)
-sample_n <- prova2sub[ind,]
-
-id_uniqsamp <- sample_n %>% add_count(CITY, HHINCOME, VALUEH, FAMSIZE, NCHILD, SEX, AGE, MARST, RACE,
-                                 HCOVANY, EDUCD, SCHLTYPE, EMPSTAT, OCC, 
-                                 INCTOT, FTOTINC, VETSTAT) %>% 
-                        filter(n==1) %>% select(id) 
-
-table_n <- sample_n %>% add_count(CITY, HHINCOME, VALUEH, FAMSIZE, NCHILD, SEX, AGE, MARST, RACE,
-                                               HCOVANY, EDUCD, SCHLTYPE, EMPSTAT, OCC, 
-                                               INCTOT, FTOTINC, VETSTAT) 
-
-freq <- table_n$n
+# N = dim(prova2sub)[1]
+# percentage = 0.01
+# n = as.integer(percentage*N)
+# ind <- sample(1:N, n, replace = FALSE)
+# sample_n <- prova2sub[ind,]
+# 
+# id_uniqsamp <- sample_n %>% add_count(CITY, HHINCOME, VALUEH, FAMSIZE, NCHILD, SEX, AGE, MARST, RACE,
+#                                  HCOVANY, EDUCD, SCHLTYPE, EMPSTAT, OCC, 
+#                                  INCTOT, FTOTINC, VETSTAT) %>% 
+#                         filter(n==1) %>% select(id) 
+# 
+# table_n <- sample_n %>% add_count(CITY, HHINCOME, VALUEH, FAMSIZE, NCHILD, SEX, AGE, MARST, RACE,
+#                                                HCOVANY, EDUCD, SCHLTYPE, EMPSTAT, OCC, 
+#                                                INCTOT, FTOTINC, VETSTAT) 
+# 
+# freq <- table_n$n
 
 
 # ---------------
