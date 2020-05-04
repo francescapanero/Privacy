@@ -1,69 +1,70 @@
-setwd("~/Documents/Privacy_git/Privacy")
+# setwd("~/Documents/Privacy_git/Privacy")
 
 library(tidyverse)
 library(dplyr)
 library(knitr)
 library(poweRlaw)
 
+rm(list=ls())
 source("functions.R")
 
+# California dataset ----------------------------------
 
-# -------------
-# California
-# -------------
+cal1  <- read.table("Dati/campione_cal_1.txt", header=FALSE)
 
-# show california behavior
+# Summary of the frequencies
+freqcal1      <- table(cal1)
+tablefreqcal1 <- data.frame("frequency"= as.factor(names(freqcal1)), "count"= as.numeric(freqcal1))
 
-cal1 <- read.table("Dati/campione_cal_1.txt", header=FALSE)
-freqcal1 <- table(cal1)
-tablefreqcal1 <- data.frame("frequency"=as.factor(names(freqcal1)), "count"=as.numeric(freqcal1))
-ggplot(data=tablefreqcal1, aes(reorder(frequency,-count), log(count))) + geom_col() + ggtitle('Cal1 log freq count')
-m_pl = displ$new(cal1$V1)
-est = estimate_xmin(m_pl)
+# Plotting the data
+ggplot(data=tablefreqcal1, aes(reorder(frequency,-count), count)) + geom_col() + ggtitle('Cal1 log freq count') + theme_light() + scale_y_log10() + xlab("Frequencies")
+
+m_pl <- displ$new(cal1$V1)
+est  <- estimate_xmin(m_pl)
+
 m_pl$setXmin(est)
 plot(m_pl) 
 lines(m_pl, col=2)
 
-cal2 <- read.table("Dati/campione_cal_2.txt", header=FALSE)
-freqcal2 <- table(cal2)
-tablefreqcal2 <- data.frame("frequency"=as.integer(names(freqcal2)), "count"=as.numeric(freqcal2))
-ggplot(data=tablefreqcal2, aes(reorder(frequency, -count), log(count))) + geom_col() + ggtitle('Cal2 log freq count')
-m_pl = displ$new(cal2$V1)
-est = estimate_xmin(m_pl)
-m_pl$setXmin(est)
-plot(m_pl) 
-lines(m_pl, col=2)
-
-cal3 <- read.table("Dati/campione_cal_3.txt", header=FALSE)
-freqcal3 <- table(cal3)
-tablefreqcal3 <- data.frame("frequency"=as.integer(names(freqcal3)), "count"=as.numeric(freqcal3))
-ggplot(data=tablefreqcal3, aes(reorder(frequency, -count), log(count))) + geom_col() + ggtitle('Cal3 log freq count')
-m_pl = displ$new(cal3$V1)
-est = estimate_xmin(m_pl)
-m_pl$setXmin(est)
-plot(m_pl) 
-lines(m_pl, col=2)
-
-cal4 <- read.table("Dati/campione_cal_4.txt", header=FALSE)
-freqcal4 <- table(cal4)
-tablefreqcal4 <- data.frame("frequency"=as.integer(names(freqcal4)), "count"=as.numeric(freqcal4))
-ggplot(data=tablefreqcal4, aes(reorder(frequency, -count), log(count))) + geom_col() + ggtitle('Cal4 log freq count')
-m_pl = displ$new(cal4$V1)
-est = estimate_xmin(m_pl)
-m_pl$setXmin(est)
-plot(m_pl) 
-lines(m_pl, col=2)
-
-cal5 <- read.table("Dati/campione_cal_5.txt", header=FALSE)
-freqcal5 <- table(cal5)
-tablefreqcal5 <- data.frame("frequency"=as.integer(names(freqcal5)), "count"=as.numeric(freqcal5))
-ggplot(data=tablefreqcal5, aes(reorder(frequency, -count), log(count))) + geom_col() + ggtitle('Cal5 log freq count')
-m_pl = displ$new(cal5$V1)
-est = estimate_xmin(m_pl)
-m_pl$setXmin(est)
-plot(m_pl) 
-lines(m_pl, col=2)
-
+# cal2 <- read.table("Dati/campione_cal_2.txt", header=FALSE)
+# freqcal2 <- table(cal2)
+# tablefreqcal2 <- data.frame("frequency"=as.integer(names(freqcal2)), "count"=as.numeric(freqcal2))
+# ggplot(data=tablefreqcal2, aes(reorder(frequency, -count), log(count))) + geom_col() + ggtitle('Cal2 log freq count')
+# m_pl = displ$new(cal2$V1)
+# est = estimate_xmin(m_pl)
+# m_pl$setXmin(est)
+# plot(m_pl) 
+# lines(m_pl, col=2)
+# 
+# cal3 <- read.table("Dati/campione_cal_3.txt", header=FALSE)
+# freqcal3 <- table(cal3)
+# tablefreqcal3 <- data.frame("frequency"=as.integer(names(freqcal3)), "count"=as.numeric(freqcal3))
+# ggplot(data=tablefreqcal3, aes(reorder(frequency, -count), log(count))) + geom_col() + ggtitle('Cal3 log freq count')
+# m_pl = displ$new(cal3$V1)
+# est = estimate_xmin(m_pl)
+# m_pl$setXmin(est)
+# plot(m_pl) 
+# lines(m_pl, col=2)
+# 
+# cal4 <- read.table("Dati/campione_cal_4.txt", header=FALSE)
+# freqcal4 <- table(cal4)
+# tablefreqcal4 <- data.frame("frequency"=as.integer(names(freqcal4)), "count"=as.numeric(freqcal4))
+# ggplot(data=tablefreqcal4, aes(reorder(frequency, -count), log(count))) + geom_col() + ggtitle('Cal4 log freq count')
+# m_pl = displ$new(cal4$V1)
+# est = estimate_xmin(m_pl)
+# m_pl$setXmin(est)
+# plot(m_pl) 
+# lines(m_pl, col=2)
+# 
+# cal5 <- read.table("Dati/campione_cal_5.txt", header=FALSE)
+# freqcal5 <- table(cal5)
+# tablefreqcal5 <- data.frame("frequency"=as.integer(names(freqcal5)), "count"=as.numeric(freqcal5))
+# ggplot(data=tablefreqcal5, aes(reorder(frequency, -count), log(count))) + geom_col() + ggtitle('Cal5 log freq count')
+# m_pl = displ$new(cal5$V1)
+# est = estimate_xmin(m_pl)
+# m_pl$setXmin(est)
+# plot(m_pl) 
+# lines(m_pl, col=2)
 
 
 # -------------
