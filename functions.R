@@ -116,7 +116,7 @@ tau1_py_sim <- function(frequencies, theta, alpha, N, R = 100, verbose=TRUE){
 
   
   # Apply the above function to each row
-  sim <- aaply(post_probs, 1, function(x) tau1_py_internal(x, frequencies, N, m1), .progress = "text")
+  sim <- plyr::aaply(post_probs, 1, function(x) tau1_py_internal(x, frequencies, N, m1), .progress = "text")
   
   cat("Estimated mean: ", round(mean(sim),2),". Monte Carlo se: ", round(sd(sim)/sqrt(R),2),".\n",sep="")
   

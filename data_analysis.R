@@ -1,7 +1,6 @@
 setwd("~/Documents/Privacy_git/Privacy")
 
 library(tidyverse)
-library(plyr)
 library(dplyr)
 library(knitr)
 library(poweRlaw)
@@ -74,7 +73,7 @@ lines(m_pl, col=2)
 prova2 <- read.csv("Dati/usa_00002.csv", header = T)
 head(prova2)
 prova2sub <-prova2[prova2$AGE > 20,]
-prova2sub <- prova2sub %>% mutate(id = 1:n())
+prova2sub <- prova2sub %>% dplyr::mutate(id = 1:n())
 
 # ------------
 # Trying different cross-classifications (you'll see a lot of commented attemps...I think the best one is the one with city,
@@ -85,21 +84,21 @@ prova2sub <- prova2sub %>% mutate(id = 1:n())
 # FINER: CITY, everything else same
 length(levels(as.factor(prova2sub$CITY))) # 103
 # index of the uniques in the population
-ind_uniq <- prova2sub %>% 
-  dplyr::group_by(CITY, HHINCOME, VALUEH, FAMSIZE, NCHILD, SEX, AGE, MARST, RACE,
+id_uniq <- prova2sub %>% 
+  add_count(CITY, HHINCOME, VALUEH, FAMSIZE, NCHILD, SEX, AGE, MARST, RACE,
            HCOVANY, EDUC, SCHLTYPE, EMPSTAT, OCC, 
-           INCTOT, FTOTINC, VETSTAT) %>% dplyr::mutate(count=dplyr::n()) %>% 
-  filter(count == 1) %>% dplyr::select(id) 
-id_uniq <- ind_uniq$id
+           INCTOT, FTOTINC, VETSTAT) %>% filter(n==1) %>% select(id) 
+id_uniq <- id_uniq$id
 
 # # run these only if you want to get the plots of the frequencies counts
-# tablecity <- prova2sub %>% group_by(CITY, HHINCOME, VALUEH, FAMSIZE, NCHILD, SEX, AGE, MARST, RACE,
-#                                     HCOVANY, EDUC, SCHLTYPE, EMPSTAT, OCC, 
-#                                     INCTOT, FTOTINC, VETSTAT) %>% summarize(count=n())
-# freq_city <- tablecity$count
+# table_city <- prova2sub %>% 
+#   add_count(CITY, HHINCOME, VALUEH, FAMSIZE, NCHILD, SEX, AGE, MARST, RACE,
+#             HCOVANY, EDUC, SCHLTYPE, EMPSTAT, OCC, 
+#             INCTOT, FTOTINC, VETSTAT)
+# freq_city <- tablecity$n
 # tablefreq_city <- table(freq_city)
 # tablefreq_city <- data.frame("frequency"=as.factor(names(tablefreq_city)), "count"=as.numeric(tablefreq_city))
-# ggplot(data=tablefreq_city, aes(reorder(frequency, -count), log(count))) + geom_col() + ggtitle('City log frequencies counts (61 classes)')
+# ggplot(data=tablefreq_city, aes(reorder(frequency, -n), log(n))) + geom_col() + ggtitle('City log frequencies counts (61 classes)')
 # m_pl = displ$new(freq_city)
 # est = estimate_xmin(m_pl)
 # m_pl$setXmin(est)
@@ -221,6 +220,27 @@ id_uniq <- ind_uniq$id
 # Now let's take freq_city and let's take some samples
 # ---------------
 
+# ---------------
+# Sample 1% 
+# ---------------
+
+N = dim(prova2sub)[1]
+percentage = 0.01
+n = as.integer(percentage*N)
+ind <- sample(1:N, n, replace = FALSE)
+sample_n <- prova2sub[ind,]
+
+id_uniqsamp <- sample_n %>% add_count(CITY, HHINCOME, VALUEH, FAMSIZE, NCHILD, SEX, AGE, MARST, RACE,
+                                 HCOVANY, EDUCD, SCHLTYPE, EMPSTAT, OCC, 
+                                 INCTOT, FTOTINC, VETSTAT) %>% 
+                        filter(n==1) %>% select(id) 
+
+table_n <- sample_n %>% add_count(CITY, HHINCOME, VALUEH, FAMSIZE, NCHILD, SEX, AGE, MARST, RACE,
+                                               HCOVANY, EDUCD, SCHLTYPE, EMPSTAT, OCC, 
+                                               INCTOT, FTOTINC, VETSTAT) 
+
+freq <- table_n$n
+
 
 # ---------------
 # Sample 5%
@@ -232,15 +252,16 @@ n0 = as.integer(percentage0*N)
 ind0 <- sample(1:N, n0, replace = FALSE)
 sample_n0 <- prova2sub[ind0,]
 
-table_n0 <- sample_n0 %>% dplyr::group_by(CITY, HHINCOME, VALUEH, FAMSIZE, NCHILD, SEX, AGE, MARST, RACE,
+id_uniqsamp0 <- sample_n0 %>% add_count(CITY, HHINCOME, VALUEH, FAMSIZE, NCHILD, SEX, AGE, MARST, RACE,
+                                        HCOVANY, EDUCD, SCHLTYPE, EMPSTAT, OCC, 
+                                        INCTOT, FTOTINC, VETSTAT)  %>% filter(n==1) %>% select(id)
+id_uniqsamp0 <- id_uniqsamp0$id
+
+table_n0 <- sample_n0 %>% add_count(CITY, HHINCOME, VALUEH, FAMSIZE, NCHILD, SEX, AGE, MARST, RACE,
                                    HCOVANY, EDUCD, SCHLTYPE, EMPSTAT, OCC, 
-                                   INCTOT, FTOTINC, VETSTAT) %>% dplyr::summarize(count=dplyr::n())
-ind_uniqsamp0 <- sample_n0 %>%
-  dplyr::group_by(CITY, HHINCOME, VALUEH, FAMSIZE, NCHILD, SEX, AGE, MARST, RACE,
-           HCOVANY, EDUC, SCHLTYPE, EMPSTAT, OCC, 
-           INCTOT, FTOTINC, VETSTAT) %>% dplyr::mutate(count=dplyr::n()) %>% 
-  filter(count ==1) %>% dplyr::select(id) 
-id_uniqsamp0 <- ind_uniqsamp0$id
+                                   INCTOT, FTOTINC, VETSTAT) 
+
+freq_n0 <- table_n0$n
 
 # compute tau_1 true
 id_alluniq0 <- intersect(id_uniqsamp0, id_uniq)
@@ -255,12 +276,11 @@ length(id_uniqsamp0)
 m1_0 <- length(id_uniqsamp0)
 
 # compute and plot frequencies counts to input in estimation
-freq_n0 <- table_n0$count
 tablefreq_n0 <- table(freq_n0)
 tablefreq_n0 <- data.frame("frequency"=as.factor(names(tablefreq_n0)), "count"=as.numeric(tablefreq_n0))
 ggplot(data=tablefreq_n0, aes(reorder(frequency, -count), log(count))) + geom_col() + ggtitle('City log frequencies counts sample 5%')
 
-# Estimates of tau1 and confidence intervals 
+# Estimates of tau1 and confidence intervals with PY and DP
 out_PY0 <- max_EPPF_PY(freq_n0)
 tau1_PY0 <- tau1_py(m1_0, n0, out_PY0$par[1], out_PY0$par[2], N)
 PY0_sim <- tau1_py_sim(freq_n0, out_PY0$par[1], out_PY0$par[2], N)
@@ -275,12 +295,19 @@ DP0_upper <- quantile(DP0_sim, 0.975)
 # tau1_NP_pois0 <- tau1_np_pois(n0, N, freq_n0)
 # tau1_NP_bin0 <- tau1_np_bin(n0, N, freq_n0)
 
+# Binomial approximation
+tau1_py_binom0 <- m1_0 * (n0 / N)^(1 - out_PY0$par[2])
+lower_py_binom0 <- qbinom(0.025, m1_0, (n0 / N)^(1 - out_PY0$par[2]))
+upper_py_binom0 <- qbinom(0.975, m1_0, (n0 / N)^(1 - out_PY0$par[2]))
+
 
 kable(data.frame(n = n0, N = N, percentage = n0/N, 
                  K_n = dim(table_n0)[1], m1 = m1_0, 
                  true_tau1 = tau1_true0, 
                  tau1_py = tau1_PY0, CI_PY = paste("[", PY0_lower,", ", PY0_upper,"]",sep=""),
-                 tau1_dp = tau1_DP0, CI_PY = paste("[", DP0_lower,", ", DP0_upper,"]",sep="")))
+                 tau1_py_binapprox = tau1_py_binom0,
+                 CI_PY_binapprox = paste("[", lower_py_binom0,", ", upper_py_binom0,"]",sep=""),
+                 tau1_dp = tau1_DP0, CI_DP = paste("[", DP0_lower,", ", DP0_upper,"]",sep="")))
 
 
 # ---------------
@@ -293,30 +320,28 @@ n1 = as.integer(percentage1*N)
 ind1 <- sample(1:N, n1, replace = FALSE)
 sample_n1 <- prova2sub[ind1,]
 
-table_n1 <- sample_n1 %>% dplyr::group_by(CITY, HHINCOME, VALUEH, FAMSIZE, NCHILD, SEX, AGE, MARST, RACE,
+id_uniqsamp1 <- sample_n1 %>% add_count(CITY, HHINCOME, VALUEH, FAMSIZE, NCHILD, SEX, AGE, MARST, RACE,
+                                        HCOVANY, EDUCD, SCHLTYPE, EMPSTAT, OCC, 
+                                        INCTOT, FTOTINC, VETSTAT)  %>% filter(n==1) %>% select(id)
+id_uniqsamp1 <- id_uniqsamp1$id
+
+table_n1 <- sample_n1 %>% add_count(CITY, HHINCOME, VALUEH, FAMSIZE, NCHILD, SEX, AGE, MARST, RACE,
                                     HCOVANY, EDUCD, SCHLTYPE, EMPSTAT, OCC, 
-                                    INCTOT, FTOTINC, VETSTAT) %>% dplyr::summarize(count=dplyr::n())
-ind_uniqsamp <- sample_n1 %>%
-  dplyr::group_by(CITY, HHINCOME, VALUEH, FAMSIZE, NCHILD, SEX, AGE, MARST, RACE,
-                          HCOVANY, EDUC, SCHLTYPE, EMPSTAT, OCC, 
-                          INCTOT, FTOTINC, VETSTAT) %>% dplyr::mutate(count=dplyr::n()) %>% 
-  filter(count ==1) %>% dplyr::select(id) 
-id_uniqsamp <- ind_uniqsamp$id
+                                    INCTOT, FTOTINC, VETSTAT) 
+
+freq_n1 <- table_n1$n
 
 # compute tau_1 true
-id_alluniq <- intersect(id_uniqsamp, id_uniq)
-tau1_true <- length(id_alluniq)
+id_alluniq1 <- intersect(id_uniqsamp1, id_uniq)
+tau1_true <- length(id_alluniq1)
 
 # comparison uniques in sample AND pop, uniques in sample, uniques in population
 tau1_true # pop and sample uniques
 length(id_uniq) # pop uniques
-length(id_uniqsamp) # sample uniques
+length(id_uniqsamp1) # sample uniques
 
 # number of uniques in sample
-m1 <- length(id_uniqsamp)
-
-# frequencies counts
-freq_n1 <- table_n1$count
+m1 <- sum(freq_n1==1)
 
 # if you wanna plot the frequency counts
 tablefreq_n1 <- table(freq_n1)
@@ -337,11 +362,18 @@ DP1_upper <- quantile(DP1_sim, 0.975)
 # tau1_NP_pois <- tau1_np_pois(n1, N, freq_n1)
 # tau1_NP_bin <- tau1_np_bin(n1, N, freq_n1)
 
+# Binomial approximation
+tau1_py_binom1 <- m1 * (n1 / N)^(1 - out_PY$par[2])
+lower_py_binom1 <- qbinom(0.025,m1, (n1 / N)^(1 - out_PY$par[2]))
+upper_py_binom1 <- qbinom(0.975,m1, (n1 / N)^(1 - out_PY$par[2]))
+
 
 kable(data.frame(n = n1, N = N, percentage = percentage1, 
                  K_n = dim(table_n1)[1], m1 = m1, 
                  true_tau1 = tau1_true, 
                  tau1_py = tau1_PY, CI_PY = paste("[", PY1_lower,", ", PY1_upper,"]",sep=""), 
+                 tau1_py_binapprox = tau1_py_binom1,
+                 CI_PY_binapprox = paste("[", lower_py_binom1,", ", upper_py_binom1,"]",sep=""),
                  tau1_dp = tau1_DP, CI_DP = paste("[", DP1_lower,", ", DP1_upper,"]",sep="")))
 
 
@@ -352,26 +384,17 @@ kable(data.frame(n = n1, N = N, percentage = percentage1,
 n2 = as.integer(0.20*N)
 ind2 <- sample(1:N, n2, replace = FALSE)
 sample_n2 <- prova2sub[ind2,]
-sample_n2 <- bind_cols(sample_n2, 'original_id' = ind2)
-table_n2 <- sample_n2 %>% dplyr::group_by(CITY, HHINCOME, VALUEH, FAMSIZE, NCHILD, SEX, AGE, MARST, RACE,
-                                   HCOVANY, EDUCD, SCHLTYPE, EMPSTAT, OCC, 
-                                   INCTOT, FTOTINC, VETSTAT) %>% dplyr::summarize(count=dplyr::n())
-freq_n2 <- table_n2$count
-tablefreq_n2 <- table(freq_n2)
-tablefreq_n2 <- data.frame("frequency"=as.factor(names(tablefreq_n2)), "count"=as.numeric(tablefreq_n2))
-ggplot(data=tablefreq_n2, aes(reorder(frequency, -count), log(count))) + geom_col() + ggtitle('City log frequencies counts sample 20%')
-m_pl = displ$new(freq_n2)
-est = estimate_xmin(m_pl)
-m_pl$setXmin(est)
-plot(m_pl, main="sample city 20%") 
-lines(m_pl, col=2, main="sample city 20%")
 
-ind2_uniqsamp <- sample_n2 %>%
-  dplyr::group_by(CITY, HHINCOME, VALUEH, FAMSIZE, NCHILD, SEX, AGE, MARST, RACE,
-           HCOVANY, EDUC, SCHLTYPE, EMPSTAT, OCC, 
-           INCTOT, FTOTINC, VETSTAT) %>% dplyr::mutate(count=dplyr::n()) %>% 
-  filter(count==1) %>% dplyr::select(original_id) 
-id2_uniqsamp <- ind2_uniqsamp$original_id
+id_uniqsamp2 <- sample_n2 %>% add_count(CITY, HHINCOME, VALUEH, FAMSIZE, NCHILD, SEX, AGE, MARST, RACE,
+                                        HCOVANY, EDUCD, SCHLTYPE, EMPSTAT, OCC, 
+                                        INCTOT, FTOTINC, VETSTAT)  %>% filter(n==1) %>% select(id)
+id_uniqsamp2 <- id_uniqsamp2$id
+
+table_n2 <- sample_n2 %>% add_count(CITY, HHINCOME, VALUEH, FAMSIZE, NCHILD, SEX, AGE, MARST, RACE,
+                                    HCOVANY, EDUCD, SCHLTYPE, EMPSTAT, OCC, 
+                                    INCTOT, FTOTINC, VETSTAT) 
+
+freq_n2 <- table_n2$n
 
 # tau1_true
 id2_alluniq <- intersect(id2_uniqsamp, id_uniq)
@@ -383,7 +406,17 @@ length(id_uniq)
 length(id2_uniqsamp)
 
 # m1
-m1_2 <- length(id2_uniqsamp)
+m1_2 <- sum(freq_n2==1)
+
+# if you wanna plot the frequency counts
+tablefreq_n2 <- table(freq_n2)
+tablefreq_n2 <- data.frame("frequency"=as.factor(names(tablefreq_n2)), "count"=as.numeric(tablefreq_n2))
+ggplot(data=tablefreq_n2, aes(reorder(frequency, -count), log(count))) + geom_col() + ggtitle('City log frequencies counts sample 20%')
+m_pl = displ$new(freq_n2)
+est = estimate_xmin(m_pl)
+m_pl$setXmin(est)
+plot(m_pl, main="sample city 20%") 
+lines(m_pl, col=2, main="sample city 20%")
 
 # Estimates
 out_PY2 <- max_EPPF_PY(freq_n2)
@@ -400,13 +433,19 @@ DP2_upper <- quantile(DP2_sim, 0.975)
 # tau1_NP_pois2 <- tau1_np_pois(n2, N, freq_n2)
 # tau1_NP_bin2 <- tau1_np_bin(n2, N, freq_n2)
 
+# Binomial approximation
+tau1_py_binom2 <- m1_2 * (n2 / N)^(1 - out_PY2$par[2])
+lower_py_binom2 <- qbinom(0.025, m1_2, (n2 / N)^(1 - out_PY2$par[2]))
+upper_py_binom2 <- qbinom(0.975, m1_2, (n2 / N)^(1 - out_PY2$par[2]))
+
 
 kable(data.frame(n = n2, N = N, percentage = n2/N, 
                  K_n = dim(table_n2)[1], m1 = m1_2, 
                  true_tau1 = tau1_true2, 
                  tau1_py = tau1_PY2, CI_PY = paste("[", PY2_lower,", ", PY2_upper,"]",sep=""),
+                 tau1_py_binapprox = tau1_py_binom2,
+                 CI_PY_binapprox = paste("[", lower_py_binom2,", ", upper_py_binom2,"]",sep=""),
                  tau1_dp = tau1_DP2, CI_DP = paste("[", DP2_lower,", ", DP2_upper,"]",sep="")))
-
 
 
 # -----------------
