@@ -77,7 +77,8 @@ prova2sub <-prova2[prova2$AGE > 20,]
 prova2sub <- prova2sub %>% dplyr::mutate(id = 1:n())
 
 # ------------
-# Trying different cross-classifications (you'll see a lot of commented attemps...I think the best one is the one with city,
+# Trying different cross-classifications (you'll see a lot of commented attempts...
+# I think the best one is the one with city,
 # the first one (the only one uncommented))
 # ------------
 
@@ -123,19 +124,86 @@ lines(m_pl, col=2, main="US 2018 city (61 classes)")
 
 
 
-# # "COARSER": region and not state or city, 
-# # race and not raced, 
-# # educ and not educd
-# # empstat and not empstatd,
-# # vetstat and not vetstatd
-# length(levels(as.factor(prova2sub$REGION))) # 9
-# tablereg <- prova2sub %>% group_by(REGION, HHINCOME, VALUEH, FAMSIZE, NCHILD, SEX, AGE, MARST, RACE,
-#                                  HCOVANY, EDUC, SCHLTYPE, EMPSTAT, OCC, 
-#                                  INCTOT, FTOTINC, VETSTAT) %>% summarize(count=n())
-# freq_reg <- tablereg$count
-# tablefreq_reg <- table(freq_reg)
-# tablefreq_reg <- data.frame("frequency"=as.factor(names(tablefreq_reg)), "count"=as.numeric(tablefreq_reg))
-# ggplot(data=tablefreq_reg, aes(reorder(frequency, -count), log(count))) + geom_col() + ggtitle('Region log frequencies counts')
+# "COARSER": region and not state or city,
+# race and not raced,
+# educ and not educd
+# empstat and not empstatd,
+# vetstat and not vetstatd
+length(levels(as.factor(prova2sub$REGION))) # 9
+tablereg <- prova2sub %>% group_by(REGION, HHINCOME, VALUEH, FAMSIZE, NCHILD, SEX, AGE, MARST, RACE,
+                                 HCOVANY, EDUC, SCHLTYPE, EMPSTAT, OCC,
+                                 INCTOT, FTOTINC, VETSTAT) %>% summarize(count=n())
+freq_reg <- tablereg$count
+tablefreq_reg <- table(freq_reg)
+tablefreq_reg <- data.frame("frequency"=as.factor(names(tablefreq_reg)), "count"=as.numeric(tablefreq_reg))
+ggplot(data=tablefreq_reg, aes(reorder(frequency, -count), log(count))) + geom_col() + ggtitle('Region log frequencies counts')
+m_pl = displ$new(freq_reg)
+est = estimate_xmin(m_pl)
+m_pl$setXmin(est)
+plot(m_pl, main="US 2018 region")
+lines(m_pl, col=2, main="US 2018 region")
+
+tablereg1 <- prova2sub %>% group_by(REGION, HHINCOME, VALUEH, FAMSIZE, NCHILD, SEX, AGE, MARST, RACE,
+                                   HCOVANY, EDUC, SCHLTYPE, EMPSTAT, OCC) %>% summarize(count=n())
+freq_reg1 <- tablereg1$count
+tablefreq_reg1 <- table(freq_reg1)
+tablefreq_reg1 <- data.frame("frequency"=as.factor(names(tablefreq_reg1)), "count"=as.numeric(tablefreq_reg1))
+ggplot(data=tablefreq_reg1, aes(reorder(frequency, -count), log(count))) + geom_col() + ggtitle('Region log frequencies counts')
+m_pl1 = displ$new(freq_reg1)
+est1 = estimate_xmin(m_pl1)
+m_pl1$setXmin(est1)
+plot(m_pl1, main="US 2018 reg")
+lines(m_pl1, col=2, main="US 2018 reg")
+
+tablereg2 <- prova2sub %>% group_by(REGION, HHINCOME, VALUEH, FAMSIZE, NCHILD, SEX, AGE, MARST, RACE) %>% summarize(count=n())
+freq_reg2 <- tablereg2$count
+tablefreq_reg2 <- table(freq_reg2)
+tablefreq_reg2 <- data.frame("frequency"=as.factor(names(tablefreq_reg2)), "count"=as.numeric(tablefreq_reg2))
+ggplot(data=tablefreq_reg2, aes(reorder(frequency, -count), log(count))) + geom_col() + ggtitle('Region log frequencies counts')
+m_pl2 = displ$new(freq_reg2)
+est2 = estimate_xmin(m_pl2)
+m_pl2$setXmin(est2)
+plot(m_pl2, main="US 2018 reg")
+lines(m_pl2, col=2, main="US 2018 reg")
+
+tablereg3 <- prova2sub %>% group_by(REGION, NCHILD, SEX, AGE, MARST, RACE) %>% summarize(count=n())
+freq_reg3 <- tablereg3$count
+tablefreq_reg3 <- table(freq_reg3)
+tablefreq_reg3 <- data.frame("frequency"=as.factor(names(tablefreq_reg3)), "count"=as.numeric(tablefreq_reg3))
+ggplot(data=tablefreq_reg3, aes(reorder(frequency, -count), log(count))) + geom_col() + ggtitle('Region log frequencies counts')
+m_pl3 = displ$new(freq_reg3)
+est3 = estimate_xmin(m_pl3)
+m_pl3$setXmin(est3)
+plot(m_pl3, main="US 2018 reg")
+lines(m_pl3, col=2, main="US 2018 reg")
+
+tablereg4 <- prova2sub %>% group_by(REGION, VALUEH, NCHILD, SEX, AGE, MARST, RACE) %>% summarize(count=n())
+freq_reg4 <- tablereg4$count
+m_pl4 = displ$new(freq_reg4)
+est4 = estimate_xmin(m_pl4)
+m_pl4$setXmin(est4)
+plot(m_pl4, main="US 2018 reg")
+lines(m_pl4, col=2, main="US 2018 reg")
+
+tablereg5 <- prova2sub %>% group_by(REGION, HHINCOME, VALUEH, NCHILD, SEX, AGE, MARST, RACE) %>% summarize(count=n())
+freq_reg5 <- tablereg5$count
+m_pl5 = displ$new(freq_reg5)
+est5 = estimate_xmin(m_pl5)
+m_pl5$setXmin(est5)
+plot(m_pl5, main="US 2018 reg")
+lines(m_pl5, col=2, main="US 2018 reg")
+
+tablereg6 <- prova2sub %>% group_by(REGION, VALUEH, FAMSIZE, NCHILD, SEX, AGE, MARST, RACE) %>% summarize(count=n())
+freq_reg6 <- tablereg6$count
+m_pl6 = displ$new(freq_reg6)
+est6 = estimate_xmin(m_pl6)
+m_pl6$setXmin(est6)
+plot(m_pl6, main="US 2018 reg")
+lines(m_pl6, col=2, main="US 2018 reg")
+id_uniq6 <- prova2sub %>%
+  add_count(REGION, VALUEH, FAMSIZE, NCHILD, SEX, AGE, MARST, RACE) %>% filter(n==1) %>% select(id)
+id_uniq6 <- id_uniq6$id
+
 
 
 # # "LESS COARSE": STATE, everything else same
@@ -494,3 +562,69 @@ kable(data.frame(n = ncal3, N = Ncal, percentage = ncal3/Ncal,
                  K_n = K_ncal3,  K_N = 'NA', m1 = m1_cal3, 
                  true_tau1 = tau1_truecal3, 
                  tau1_py = tau1_PYcal3, tau1_dp = tau1_DPcal3))
+
+
+
+# ---------------
+# Sample 5% with TABLE REGION 6
+# ---------------
+
+N = dim(prova2sub)[1]
+percentage1 = 0.05
+n1 = as.integer(percentage1*N)
+ind1 <- sample(1:N, n1, replace = FALSE)
+sample_n1 <- prova2sub[ind1,]
+
+id_uniqsamp1 <- sample_n1 %>% add_count(REGION, VALUEH, FAMSIZE, NCHILD, SEX, AGE, MARST, RACE)  %>% 
+                filter(n==1) %>% select(id)
+id_uniqsamp1 <- id_uniqsamp1$id
+
+table_n1 <- sample_n1 %>% add_count(REGION, VALUEH, FAMSIZE, NCHILD, SEX, AGE, MARST, RACE) 
+
+freq_n1 <- table_n1$n
+
+# compute tau_1 true
+id_alluniq1 <- intersect(id_uniqsamp1, id_uniq6)
+tau1_true <- length(id_alluniq1)
+
+# comparison uniques in sample AND pop, uniques in sample, uniques in population
+tau1_true # pop and sample uniques
+length(id_uniq6) # pop uniques
+length(id_uniqsamp1) # sample uniques
+
+# number of uniques in sample
+m1 <- sum(freq_n1==1)
+
+# if you wanna plot the frequency counts
+tablefreq_n1 <- table(freq_n1)
+tablefreq_n1 <- data.frame("frequency"=as.factor(names(tablefreq_n1)), "count"=as.numeric(tablefreq_n1))
+ggplot(data=tablefreq_n1, aes(reorder(frequency, -count), log(count))) + geom_col() + ggtitle('City log frequencies counts sample 10%')
+
+# Stime
+out_PY <- max_EPPF_PY(freq_n1)
+tau1_PY <- tau1_py(m1, n1, out_PY$par[1], out_PY$par[2], N)
+PY1_sim <- tau1_py_sim(freq_n1, out_PY$par[1], out_PY$par[2], N)
+PY1_lower <- quantile(PY1_sim, 0.025)
+PY1_upper <- quantile(PY1_sim, 0.975)
+out_DP <- max_EPPF_DP(freq_n1)
+tau1_DP <- tau1_dp(m1, n1, out_DP$par, N)
+DP1_sim  <- tau1_py_sim(freq_n1, out_DP$par, 0, N)
+DP1_lower <- quantile(DP1_sim, 0.025)
+DP1_upper <- quantile(DP1_sim, 0.975)
+# tau1_NP_pois <- tau1_np_pois(n1, N, freq_n1)
+# tau1_NP_bin <- tau1_np_bin(n1, N, freq_n1)
+
+# Binomial approximation
+tau1_py_binom1 <- m1 * (n1 / N)^(1 - out_PY$par[2])
+lower_py_binom1 <- qbinom(0.025,m1, (n1 / N)^(1 - out_PY$par[2]))
+upper_py_binom1 <- qbinom(0.975,m1, (n1 / N)^(1 - out_PY$par[2]))
+
+
+kable(data.frame(n = n1, N = N, percentage = percentage1, 
+                 K_n = dim(table_n1)[1], m1 = m1, 
+                 true_tau1 = tau1_true, 
+                 tau1_py = tau1_PY, CI_PY = paste("[", PY1_lower,", ", PY1_upper,"]",sep=""), 
+                 tau1_py_binapprox = tau1_py_binom1,
+                 CI_PY_binapprox = paste("[", lower_py_binom1,", ", upper_py_binom1,"]",sep=""),
+                 tau1_dp = tau1_DP, CI_DP = paste("[", DP1_lower,", ", DP1_upper,"]",sep="")))
+
