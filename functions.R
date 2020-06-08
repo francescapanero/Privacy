@@ -124,4 +124,121 @@ tau1_py_sim <- function(frequencies, theta, alpha, N, R = 100, verbose=TRUE){
 }
 
 
+# The following function estimates tau1 with PY, DP and Binomial approximation, and corresponding CI
+# For the PY estimation, we have two cases:
+# 'max_EPPF' uses as point estimate the max of the logEPPF
+# 'posterior_samples' samples values from posterior (computed with post_sim_param) and returns 
+# tau1_PY estimates and CIs for the last 10 sampled values
+# INPUT:
+# data: population dataset
+# id_uniq_pop: id of the uniques in the population
+# percentage: the desired size of the sample
+# iter: number of samples you want to take (each of size percentage*N)
+# nsamples: number of samples for posterior sampling (input in post_sim_param)
+# burnin: not actually a burnin, but how many samples you want to keep
+# case: 'max_EPPF' or 'posterior_samples'
+# ...: the variables according to which we cross-classify
+# OUPUT: 
+# table with estimates and CI
+loop_estimate <- function(data, id_uniq_pop, percentage, iter, nsamples, burnin=5, case, ...){
+  
+  N = dim(data)[1]
+  output = vector(mode='list', length=iter)
+  n = as.integer(percentage*N)
+  
+  for(i in 1:iter){
+    # Create a sample
+    ind <- sample(1:N, n, replace = FALSE)
+    sample <- data[ind,]
+    # Find uniques in sample
+    id_uniq_sample <- sample %>% add_count(...) %>% filter(n==1) %>% select(id)
+    id_uniq_sample <- id_uniq_sample$id
+    # Find frequencies counts in the sample
+    table_samp <- sample %>% group_by(...) %>% count()
+    freq_samp <- table_samp$n
+    # Find uniques in the sample
+    m1 <- sum(freq_samp==1)
+    # Find tau1_true
+    id_uniq_sample_pop <- intersect(id_uniq_sample, id_uniq_pop)
+    tau1_true <- length(id_uniq_sample_pop)
+    
+    if(case == 'max_EPPF'){
+      # PY
+      out_PY <- max_EPPF_PY(freq_samp)
+      tau1_PY <- tau1_py(m1, n, out_PY$par[1], out_PY$par[2], N)
+      PY_sim <- tau1_py_sim(freq_samp, out_PY$par[1], out_PY$par[2], N)
+      PY_lower <- quantile(PY_sim, 0.005)
+      PY_upper <- quantile(PY_sim, 0.995)
+      
+      # # DP
+      # out_DP <- max_EPPF_DP(freq_samp)
+      # tau1_DP <- tau1_dp(m1, n, out_DP$par, N)
+      # DP_sim  <- tau1_py_sim(freq_samp, out_DP$par, 0, N)
+      # DP_lower <- quantile(DP_sim, 0.005)
+      # DP_upper <- quantile(DP_sim, 0.995)
+      # # Binomial Approx
+      # tau1_py_binom <- m1 * (n / N)^(1 - out_PY$par[2])
+      # lower_py_binom <- qbinom(0.005, m1, (n / N)^(1 - out_PY$par[2]))
+      # upper_py_binom <- qbinom(0.995, m1, (n / N)^(1 - out_PY$par[2]))
+      
+      output[[i]] <- list(tau1_true=tau1_true, tau1_PY = tau1_PY, #tau1_DP = tau1_DP,  tau1_binom = tau1_py_binom,
+                     CI_PY = c(PY_lower, PY_upper), #CI_DP = c(DP_lower, DP_upper), CI_binom = c(lower_py_binom, upper_py_binom),
+                     theta=out_PY$par[1], alpha=out_PY$par[2])
+    }
+    
+    if(case == 'posterior_samples'){
+      # PY
+      out_PY_post <- post_sim_param(freq_samp, nsamples)
+      out_PY <- out_PY_post[(nsamples-burnin):nsamples,]
+      tau1_PY <- apply(out_PY, 1 , function(x) tau1_py(m1, n, x[1], x[2], N))
+      PY_sim <- apply(out_PY, 1, function(x) tau1_py_sim(freq_samp, x[1], x[2], N))
+      PY_lower <- apply(PY_sim, 2, function(x) quantile(x, 0.005))
+      PY_upper <- apply(PY_sim, 2, function(x) quantile(x, 0.995))
+      
+      # # DP
+      # out_DP <- max_EPPF_DP(freq_samp)
+      # tau1_DP <- tau1_dp(m1, n, out_DP$par, N)
+      # DP_sim  <- tau1_py_sim(freq_samp, out_DP$par, 0, N)
+      # DP_lower <- quantile(DP_sim, 0.005)
+      # DP_upper <- quantile(DP_sim, 0.995)
+      # # Binomial Approx
+      # tau1_py_binom <- m1 * (n / N)^(1 - out_PY$par[2])
+      # lower_py_binom <- qbinom(0.005, m1, (n / N)^(1 - out_PY$par[2]))
+      # upper_py_binom <- qbinom(0.995, m1, (n / N)^(1 - out_PY$par[2]))
+      
+      output[[i]] <- list(tau1_true=tau1_true, tau1_PY = mean(tau1_PY), #tau1_DP = tau1_DP,  tau1_binom = tau1_py_binom,
+                          CI_PY = c(mean(PY_lower), mean(PY_upper)),
+                          #CI_DP = c(DP_lower, DP_upper), CI_binom = c(lower_py_binom, upper_py_binom),
+                          theta=mean(out_PY), theta_sample = out_PY_post[,1],
+                          alpha=mean(out_PY), alpha_sample = out_PY_post[,2])
+    }
+  }
+  return(output)
+}
+
+
+# This function samples from the posterior of the parameters theta and alpha of the PY
+# at the moment the priors are fixed:
+# theta \sim LogNormal(0,1)
+# alpha \sim Beta(2,2)
+# INPUT: 
+# freq: frequencies of your sample
+# nsamples: desired number of samples
+# OUPUT:
+# matrix (nsamples X 2) with estimates
+post_sim_param <- function(freq, nsamples){
+  
+  param_estimate <- arms(c(500, 0.9), 
+       function(param, a=2, b=2, mu=0, sigma=1, frequencies=freq)  -logEPPF_PY(param[1], param[2], frequencies) +
+                                                ((a-1)*log(param[2]) + (b-1)*log(1-param[2]) - lbeta(a,b) -
+                                               (log(param[1])-mu)^2/(2*sigma^2)-log(param[1]*sigma*sqrt(2*pi))) ,
+       function(param) (param[1]>=1e-10)*(param[1]<=1e+16)*(param[2]>=1e-10)*(param[2]<=1-1e-10),
+       nsamples)
+
+  return(param_estimate)
+}
+
+
+
+
 

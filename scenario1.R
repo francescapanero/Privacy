@@ -13,7 +13,7 @@ N     <- 10^6
 n     <- 10^6/5
 sigma <- 1.5
 
-dataset <- dataset_creation(n = n, sigma = sigma, H = H, N = N)
+dataset <- dataset_creation(n = n, alpha = sigma, H = H, N = N)
 # ADDED FRA
 tablepl <- table(dataset$frequencies)
 tablepl <- data.frame("frequency"=as.integer(names(tablepl)), "count"=as.numeric(tablepl))
