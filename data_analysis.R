@@ -3,62 +3,44 @@
 library(tidyverse)
 library(dplyr)
 library(knitr)
-library(poweRlaw)
-library(HI)
 
 rm(list=ls())
+
+load("data/IPMUS.RData")
 source("functions.R")
 
-# --------------------------------
-# IPMUS DATA
-# --------------------------------
+# -------------------------------
+# 1% dataset
+# -------------------------------
 
-dataset   <- read.csv("data/usa_00002.csv", header = T)
+dataset <- data_10perc
+alpha <- 0.01
 
-# head(dataset)
+model_checking(data_10perc$frequencies)
 
-# Subsetting the dataset so that AGE > 20. The dataset is overwritten
-dataset <-dataset[dataset$AGE > 20,]
-dataset <- dataset %>% dplyr::mutate(id = 1:n())
+# Parameter estimation
+out_PY  <- max_EPPF_PY(dataset$frequencies)
+tau1_PY <- tau1_py(dataset$m1, dataset$n, out_PY$par[1], out_PY$par[2], dataset$N)
 
-# Selection of the relevant variables and groups
-tablestate <- dataset %>% group_by(REGION, HHINCOME, VALUEH, FAMSIZE, NCHILD, SEX, AGE, MARST,
-                                     HCOVANY, EDUC, SCHLTYPE, EMPSTAT, OCC,
-                                     INCTOT, FTOTINC, VETSTAT) %>% count()
-# Frequencies
-freq_state <- sort(tablestate$n)
+# Dirichlet process estimation
+out_DP    <- max_EPPF_DP(dataset$frequencies)
+tau1_DP   <- tau1_dp(dataset$m1, dataset$n, out_DP$par[1], dataset$N)
+DP1_sim   <- tau1_py_sim(dataset$frequencies, out_DP$par[1], 0, dataset$N)
+DP1_lower <- quantile(DP1_sim, alpha/2)
+DP1_upper <- quantile(DP1_sim, 1 - alpha/2)
 
-# Graphical representation of 
-m_pl = displ$new(freq_state)
-est = estimate_xmin(m_pl)
-m_pl$setXmin(est)
-plot(m_pl)
-id_state <- dataset %>% add_count(REGION, HHINCOME, VALUEH, FAMSIZE, NCHILD, SEX, AGE, MARST,
-                                    HCOVANY, EDUC, SCHLTYPE, EMPSTAT, OCC,
-                                    INCTOT, FTOTINC, VETSTAT) %>% filter(n==1) %>% select(id)
-id_state <- id_state$id
+# # Binomial approximation
+# tau1_py_binom1  <- m1_state * (n0 / N)^(1 - out_PY$par[2])
+# lower_py_binom1 <- qbinom(alpha/2, m1_state, (n0 / N)^(1 - out_PY$par[2]))
+# upper_py_binom1 <- qbinom(1 - alpha/2, m1_state, (n0 / N)^(1 - out_PY$par[2]))
 
-# ---------------
-# Now let's take some SAMPLES
-# ---------------
-
-source('functions.R')
-
-estimates <- loop_estimate(data=dataset, id_uniq_pop=id_state, percentage=0.01, iter=2, 
-                           nsamples=10000, burnin=2, case='posterior_samples', REGION, HHINCOME, 
-                            VALUEH, FAMSIZE, NCHILD, SEX, AGE, MARST,
-                            HCOVANY, EDUC, SCHLTYPE, EMPSTAT, OCC,
-                            INCTOT, FTOTINC, VETSTAT)
-
-# check convergence
-plot(estimates$theta_sample, type='l')
-plot(estimates$alpha_sample, type='l')
-
-iter = 2
-for(i in 1:iter){
-  print(c(estimates[[i]]$tau1_true,estimates[[i]]$CI_PY, estimates[[i]]$theta, estimates[[i]]$alpha))
-}
-
-
-
+# Summary
+kable(data.frame(n = dataset$n, N = dataset$N, percentage = round(dataset$percentage,2),
+                 m1 = dataset$m1,
+                 K_n = dataset$K_n,
+                 true_tau1 = dataset$true_tau1,
+                 tau1_py = tau1_PY, CI_PY = paste("[", PY1_lower,", ", PY1_upper,"]",sep=""),
+                 #tau1_py_binapprox = tau1_py_binom1,
+                 #CI_PY_binapprox = paste("[", lower_py_binom1,", ", upper_py_binom1,"]",sep=""),
+                 tau1_dp = tau1_DP, CI_DP = paste("[", DP1_lower,", ", DP1_upper,"]",sep="")))
 
