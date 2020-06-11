@@ -1,5 +1,6 @@
 # library(plyr)
 library(ggplot2)
+Rcpp::sourceCpp('cluster_py.cpp')
 
 rdir <- function(R, param, log_scale=FALSE) {
   H   <- length(param)
@@ -42,6 +43,7 @@ max_EPPF_PY <- function(frequencies){
   return(out)
 }
 
+
 max_EPPF_DP <- function(frequencies){
   start <- 1 # Initialization of the maximization algorithm
   out <- nlminb(start= start, 
@@ -61,7 +63,7 @@ tau1_py <- function(m1, n, theta, alpha, N){
       + log(theta+N) - log(theta+N+alpha-1))
 }
 
-tau1_py_sim <- function(frequencies, theta, alpha, N, R = 100, verbose=TRUE){
+tau1_py_sim2 <- function(frequencies, theta, alpha, N, R = 100, verbose=TRUE){
   
   # Main quantities
   m1  <- sum(frequencies == 1)
@@ -98,16 +100,35 @@ tau1_py_sim <- function(frequencies, theta, alpha, N, R = 100, verbose=TRUE){
 }
 
 
-expected_cl_py <- function(n, alpha, theta){
-  n <- as.integer(n)
-  if(alpha==0) {
-      out <- theta * sum(1/(theta - 1 + 1:n))
-  } else {
-      out <- 1/alpha*exp(lgamma(theta + alpha + n) - lgamma(theta + alpha) - lgamma(theta + n) + lgamma(theta + 1)) - theta/alpha
-  }
 
-  return(out)
+tau1_py_sim <- function(frequencies, theta, alpha, N, R = 100, verbose=TRUE){
+  
+  # Main quantities
+  n   <- sum(frequencies)
+  m1  <- sum(frequencies == 1)
+  K_n <- length(frequencies)
+  
+  K_sim <- plyr::aaply(matrix(0,R,2), 1, function(x) cluster_py_C(N - n, 1 - alpha, theta+n), .progress = "text")
+  #K_sim <- replicate(R,cluster_py_C(N - n, 1 - alpha, theta+n))
+  
+  sim <- rhyper(R, (theta + n)/(1-alpha) - 1, K_sim, m1)
+  sim
+  
+  cat("Estimated mean: ", round(mean(sim),2),". Monte Carlo se: ", round(sd(sim)/sqrt(R),2),".\n",sep="")
+  sim
 }
+
+
+# expected_cl_py <- function(n, alpha, theta){
+#   n <- as.integer(n)
+#   if(alpha==0) {
+#       out <- theta * sum(1/(theta - 1 + 1:n))
+#   } else {
+#       out <- 1/alpha*exp(lgamma(theta + alpha + n) - lgamma(theta + alpha) - lgamma(theta + n) + lgamma(theta + 1)) - theta/alpha
+#   }
+# 
+#   return(out)
+# }
 
 model_checking_PY <- function(frequencies, percentage=0.75, step = 100){
   
