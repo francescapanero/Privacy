@@ -109,7 +109,7 @@ expected_cl_py <- function(n, alpha, theta){
   return(out)
 }
 
-model_checking_PY <- function(frequencies, percentage=0.1, step = 100){
+model_checking_PY <- function(frequencies, percentage=0.75, step = 100){
   
   # Total number of observations
   N   <- sum(frequencies)
@@ -147,7 +147,7 @@ model_checking_PY <- function(frequencies, percentage=0.1, step = 100){
   p
 }
 
-model_checking_DP <- function(frequencies, percentage=0.1, step = 100){
+model_checking_DP <- function(frequencies, percentage=0.75, step = 100){
   
   # Total number of observations
   N   <- sum(frequencies)
