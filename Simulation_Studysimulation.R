@@ -3,8 +3,7 @@ library(knitr)
 
 source('functions.R')
 
-
-dataset_creation <- function(n, alpha, H, N){
+dataset_creation_zipf <- function(n, alpha, H, N){
   
   # Expanded representation
   probs =  1/(1:H)^(alpha) #
@@ -25,7 +24,6 @@ dataset_creation <- function(n, alpha, H, N){
        m1 = sum(freq_observed==1), percentage = n/N, alpha = alpha, true_tau1 = true_tau1)
   
 }
-
 
 # -------------------------------------------
 # Scenario 1 - Low sigma
