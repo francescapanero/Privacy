@@ -97,74 +97,90 @@ tau1_py_sim <- function(frequencies, theta, alpha, N, R = 100, verbose=TRUE){
   sim
 }
 
-model_checking_PY <- function(frequencies, subset=100){
-  
+
+expected_cl_py <- function(n, alpha, theta){
+  n <- as.integer(n)
+  if(alpha==0) {
+      out <- theta * sum(1/(theta - 1 + 1:n))
+  } else {
+      out <- 1/alpha*exp(lgamma(theta + alpha + n) - lgamma(theta + alpha) - lgamma(theta + n) + lgamma(theta + 1)) - theta/alpha
+  }
+
+  return(out)
+}
+
+model_checking_PY <- function(frequencies, percentage=0.1, step = 100){
   
   # Total number of observations
   N   <- sum(frequencies)
   K_N <- length(frequencies)
+  
   points_full   <- factor(rep(1:length(frequencies), frequencies)) # it is important they are factor
   points_full   <- points_full[sample(N)] # Randomly permute the data
   freq_full     <- as.numeric(table(points_full))
   
-  nn <- seq.int(from = floor(N/subset), to = N, by = floor(N/subset))
+  freq_observed  <- as.numeric(table(points_full[1:round(percentage*N)]))
+  n              <- sum(freq_observed)
+  m1             <- sum(freq_observed==1)
   
-  fit_PY    <- max_EPPF_PY(frequencies)
-  est_tau1  <- numeric(subset)
-  true_tau1 <- numeric(subset)
+  nn <- seq.int(from = n, to = N, length.out=step)
   
-  for(i in 1:subset){
+  fit_PY    <- max_EPPF_PY(freq_observed[freq_observed >0])
+
+  est_tau1  <- numeric(step)
+  true_tau1 <- numeric(step)
+  
+  for(i in 1:step){
     
-    points_obs  <- points_full[1:nn[i]]
+    points_full1  <- points_full[1:nn[i]]
     
     # Observed frequencies
-    freq_observed <- as.numeric(table(points_obs))
+    freq_full1 <- as.numeric(table(points_full1))
     
     # True tau1
-    #freq_observed <- freq_observed[freq_observed >0]
-    n             <- sum(freq_observed)
-    m1            <- sum(freq_observed==1)
-    est_tau1[i]   <- tau1_py(m1 = m1, n = n, theta = fit_PY$par[1], alpha = fit_PY$par[2], N = N)
-    true_tau1[i]  <- sum((freq_full == 1) & (freq_observed == 1))
+    est_tau1[i]   <- tau1_py(m1 = m1, n = n, theta = fit_PY$par[1], alpha = fit_PY$par[2], N = nn[i])
+    true_tau1[i]  <- sum((freq_full1 == 1) & (freq_observed == 1))
   } 
   
-  data_plot <- data.frame(nn = nn, est_tau1 = est_tau1, true_tau1 = true_tau1, percentage = nn/N)
+  data_plot <- data.frame(nn = nn, est_tau1 = est_tau1, true_tau1 = true_tau1)
   p <- ggplot(data_plot, aes(x = nn, y = est_tau1))  + theme_bw() + xlab("# of observations") + ylab(expression(tau[1])) + geom_point(aes(y = true_tau1))+ geom_line(col="gold")
   p
 }
 
-model_checking_DP <- function(frequencies, subset=100){
-  
+model_checking_DP <- function(frequencies, percentage=0.1, step = 100){
   
   # Total number of observations
   N   <- sum(frequencies)
   K_N <- length(frequencies)
+  
   points_full   <- factor(rep(1:length(frequencies), frequencies)) # it is important they are factor
   points_full   <- points_full[sample(N)] # Randomly permute the data
   freq_full     <- as.numeric(table(points_full))
   
-  nn <- seq.int(from = floor(N/subset), to = N, by = floor(N/subset))
+  freq_observed  <- as.numeric(table(points_full[1:round(percentage*N)]))
+  n              <- sum(freq_observed)
+  m1             <- sum(freq_observed==1)
   
-  fit_DP    <- max_EPPF_DP(frequencies)
-  est_tau1  <- numeric(subset)
-  true_tau1 <- numeric(subset)
+  nn <- seq.int(from = n, to = N, length.out=step)
   
-  for(i in 1:subset){
+  fit_DP    <- max_EPPF_DP(freq_observed[freq_observed >0])
+  
+  est_tau1  <- numeric(step)
+  true_tau1 <- numeric(step)
+  
+  for(i in 1:step){
     
-    points_obs  <- points_full[1:nn[i]]
+    points_full1  <- points_full[1:nn[i]]
     
     # Observed frequencies
-    freq_observed <- as.numeric(table(points_obs))
+    freq_full1 <- as.numeric(table(points_full1))
     
     # True tau1
-    #freq_observed <- freq_observed[freq_observed >0]
-    n             <- sum(freq_observed)
-    m1            <- sum(freq_observed==1)
-    est_tau1[i]   <- tau1_dp(m1 = m1, n = n, theta = fit_DP$par[1], N = N)
-    true_tau1[i]  <- sum((freq_full == 1) & (freq_observed == 1))
+    est_tau1[i]   <- tau1_dp(m1 = m1, n = n, theta = fit_DP$par[1], N = nn[i])
+    true_tau1[i]  <- sum((freq_full1 == 1) & (freq_observed == 1))
   } 
   
-  data_plot <- data.frame(nn = nn, est_tau1 = est_tau1, true_tau1 = true_tau1, percentage = nn/N)
+  data_plot <- data.frame(nn = nn, est_tau1 = est_tau1, true_tau1 = true_tau1)
   p <- ggplot(data_plot, aes(x = nn, y = est_tau1))  + theme_bw() + xlab("# of observations") + ylab(expression(tau[1])) + geom_point(aes(y = true_tau1))+ geom_line(col="blue")
   p
 }

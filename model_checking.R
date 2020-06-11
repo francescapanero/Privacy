@@ -28,8 +28,8 @@ dataset_creation <- function(n, alpha, H, N){
 }
 
 H     <- 3*10^6
-N     <- 10^6 + 2382634
-n     <- 10^5/5 + 2322
+N     <- 10^6
+n     <- 10^6
 alpha <- 1.6
 
 dataset <- dataset_creation(n = n, alpha = alpha, H = H, N = N)
@@ -39,4 +39,4 @@ kable(data.frame(n = dataset$n, N = dataset$N, percentage = dataset$percentage,
                  true_tau1 =dataset$true_tau1, 
                  alpha = dataset$alpha))
 
-model_checking(dataset$frequencies)
+model_checking_PY(dataset$frequencies)
