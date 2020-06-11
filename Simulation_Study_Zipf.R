@@ -45,58 +45,28 @@ kable(data.frame(n = dataset$n, N = dataset$N, percentage = dataset$percentage,
 model_checking_PY(dataset$frequencies)
 model_checking_DP(dataset$frequencies)
 
-# 1 ] DP estimation
-max_EPPF_DP(dataset$frequencies)
+# Parameter estimation
+out_PY  <- max_EPPF_PY(dataset$frequencies)
+tau1_PY <- tau1_py(dataset$m1, dataset$n, out_PY$par[1], out_PY$par[2], dataset$N)
+PY_sim  <- tau1_py_sim(dataset$frequencies, out_PY$par[1], out_PY$par[2],  dataset$N)
+#PY_sim2  <- tau1_py_sim2(dataset$frequencies, out_PY$par[1], out_PY$par[2],  dataset$N)
+PY_lower <- quantile(PY_sim, 0.01/2)
+PY_upper <- quantile(PY_sim, 1 - 0.01/2)
 
-# Theta estimation via MLE
-theta_hat <- max_EPPF_DP(dataset$frequencies)$par
+# Dirichlet process estimation
+out_DP    <- max_EPPF_DP(dataset$frequencies)
+tau1_DP   <- tau1_dp(dataset$m1, dataset$n, out_DP$par[1], dataset$N)
+DP_lower <- qhyper(0.01/2, out_DP$par[1] + dataset$n - 1, dataset$N - dataset$n, dataset$m1)
+DP_upper <- qhyper(1 - 0.01/2, out_DP$par[1] + dataset$n - 1, dataset$N - dataset$n, dataset$m1)
 
-# Estimation of tau1_dp
-dataset$tau1_dp <- tau1_dp(dataset$m1, dataset$n, theta_hat, dataset$N)
+# Summary
+kable(data.frame(n = dataset$n, N = dataset$N, percentage = round(dataset$percentage,2),
+                 m1 = dataset$m1,
+                 K_n = dataset$K_n,
+                 true_tau1 = dataset$true_tau1,
+                 tau1_py = tau1_PY, CI_PY = paste("[", PY_lower,", ", PY_upper,"]",sep=""),
+                 tau1_dp = tau1_DP, CI_DP = paste("[", DP_lower,", ", DP_upper,"]",sep="")))
 
-dataset$true_tau1
-dataset$tau1_dp
-
-# EXACT uncertainty quantification using MonteCarlo
-sim_dp  <- tau1_py_sim(dataset$frequencies, theta_hat, 0, dataset$N, R = 1000)
-dataset$lower_dp <- quantile(sim_dp, 0.025)
-dataset$upper_dp <- quantile(sim_dp, 0.975)
-
-# # Binomial approximation
-# dataset$tau1_dp_binom <- dataset$m1 * dataset$n / dataset$N
-# dataset$lower_dp_binom <- qbinom(0.025,dataset$m1, dataset$n / dataset$N)
-# dataset$upper_dp_binom <- qbinom(0.975,dataset$m1, dataset$n / dataset$N)
-
-# 2 ] PY estimation
-
-max_EPPF_PY(dataset$frequencies)
-
-param_hat <- max_EPPF_PY(dataset$frequencies)
-theta_hat <- param_hat$par[1]
-alpha_hat <- param_hat$par[2]
-
-dataset$tau1_py <- tau1_py(dataset$m1, dataset$n, theta_hat, alpha_hat, dataset$N)
-
-dataset$true_tau1
-dataset$tau1_py 
-
-# Uncertainty quantification
-sim_py <- tau1_py_sim(dataset$frequencies, theta_hat, alpha_hat, dataset$N, R = 1000)
-dataset$lower_py <- quantile(sim_py, 0.025)
-dataset$upper_py <- quantile(sim_py, 0.975)
-
-
-# # Binomial approximation
-# dataset$tau1_py_binom <- dataset$m1 * (dataset$n / dataset$N)^(1 - alpha_hat)
-# dataset$lower_py_binom <- qbinom(0.025,dataset$m1, (dataset$n / dataset$N)^(1 - alpha_hat))
-# dataset$upper_py_binom <- qbinom(0.975,dataset$m1, (dataset$n / dataset$N)^(1 - alpha_hat))
-
-# Results -----------------------------------
-
-kable(data.frame(true_tau1 = dataset$true_tau1, 
-                 tau_dp       = dataset$tau1_dp,  CI_dp = paste("[", dataset$lower_dp,", ", dataset$upper_dp,"]",sep=""),
-                 tau_py       = dataset$tau1_py, CI_py = paste("[", dataset$lower_py,", ", dataset$upper_py,"]",sep="")
-))
 
 # -------------------------------------------
 # Scenario 1 - zipf_param = 1.5
@@ -115,59 +85,35 @@ kable(data.frame(n = dataset$n, N = dataset$N, percentage = dataset$percentage,
                  true_tau1 =dataset$true_tau1, 
                  zipf_param = dataset$zipf_param))
 
-model_checking_PY(dataset$frequencies, percentage = 0.8)
+set.seed(1234)
+model_checking_PY(dataset$frequencies)
 model_checking_DP(dataset$frequencies)
 
-# 1 ] DP estimation
+# Parameter estimation
+out_PY  <- max_EPPF_PY(dataset$frequencies)
+tau1_PY <- tau1_py(dataset$m1, dataset$n, out_PY$par[1], out_PY$par[2], dataset$N)
+PY_sim  <- tau1_py_sim(dataset$frequencies, out_PY$par[1], out_PY$par[2],  dataset$N, R = 1000)
+# PY_sim2  <- tau1_py_sim2(dataset$frequencies, out_PY$par[1], out_PY$par[2],  dataset$N)
 
-max_EPPF_DP(dataset$frequencies)
+#hist(PY_sim)
+#hist(PY_sim2)
 
-# Theta estimation via MLE
-theta_hat <- max_EPPF_DP(dataset$frequencies)$par
+PY_lower <- quantile(PY_sim, 0.01/2)
+PY_upper <- quantile(PY_sim, 1 - 0.01/2)
 
-# Estimation of tau1_dp
-dataset$tau1_dp <- tau1_dp(dataset$m1, dataset$n, theta_hat, dataset$N)
+# Dirichlet process estimation
+out_DP    <- max_EPPF_DP(dataset$frequencies)
+tau1_DP   <- tau1_dp(dataset$m1, dataset$n, out_DP$par[1], dataset$N)
+DP_lower <- qhyper(0.01/2, out_DP$par[1] + dataset$n - 1, dataset$N - dataset$n, dataset$m1)
+DP_upper <- qhyper(1 - 0.01/2, out_DP$par[1] + dataset$n - 1, dataset$N - dataset$n, dataset$m1)
 
-dataset$true_tau1
-dataset$tau1_dp
-
-# EXACT uncertainty quantification using MonteCarlo
-sim_dp  <- tau1_py_sim(dataset$frequencies, theta_hat, 0, dataset$N, R = 1000)
-dataset$lower_dp <- quantile(sim_dp, 0.025)
-dataset$upper_dp <- quantile(sim_dp, 0.975)
-
-# # Binomial approximation
-# dataset$tau1_dp_binom <- dataset$m1 * dataset$n / dataset$N
-# dataset$lower_dp_binom <- qbinom(0.025,dataset$m1, dataset$n / dataset$N)
-# dataset$upper_dp_binom <- qbinom(0.975,dataset$m1, dataset$n / dataset$N)
-
-# 2 ] PY estimation
-
-param_hat <- max_EPPF_PY(dataset$frequencies)
-theta_hat <- param_hat$par[1]
-alpha_hat <- param_hat$par[2]
-
-dataset$tau1_py <- tau1_py(dataset$m1, dataset$n, theta_hat, alpha_hat, dataset$N)
-
-dataset$true_tau1
-dataset$tau1_py 
-
-# Uncertainty quantification
-sim_py <- tau1_py_sim(dataset$frequencies, theta_hat, alpha_hat, dataset$N, R = 1000)
-dataset$lower_py <- quantile(sim_py, 0.025)
-dataset$upper_py <- quantile(sim_py, 0.975)
-
-# # Binomial approximation
-# dataset$tau1_py_binom <- dataset$m1 * (dataset$n / dataset$N)^(1 - alpha_hat)
-# dataset$lower_py_binom <- qbinom(0.025,dataset$m1, (dataset$n / dataset$N)^(1 - alpha_hat))
-# dataset$upper_py_binom <- qbinom(0.975,dataset$m1, (dataset$n / dataset$N)^(1 - alpha_hat))
-
-# Results -----------------------------------
-
-kable(data.frame(true_tau1 = dataset$true_tau1, 
-                 tau_dp       = dataset$tau1_dp,  CI_dp = paste("[", dataset$lower_dp,", ", dataset$upper_dp,"]",sep=""),
-                 tau_py       = dataset$tau1_py, CI_py = paste("[", dataset$lower_py,", ", dataset$upper_py,"]",sep="")
-))
+# Summary
+kable(data.frame(n = dataset$n, N = dataset$N, percentage = round(dataset$percentage,2),
+                 m1 = dataset$m1,
+                 K_n = dataset$K_n,
+                 true_tau1 = dataset$true_tau1,
+                 tau1_py = tau1_PY, CI_PY = paste("[", PY_lower,", ", PY_upper,"]",sep=""),
+                 tau1_dp = tau1_DP, CI_DP = paste("[", DP_lower,", ", DP_upper,"]",sep="")))
 
 # -------------------------------------------
 # Scenario 1 - zipf_param = 1.3
@@ -175,7 +121,7 @@ kable(data.frame(true_tau1 = dataset$true_tau1,
 
 H          <- 10^7
 N          <- 10^6
-n          <- 20000
+n          <- 100000
 zipf_param <- 1.3
 
 set.seed(123)
@@ -186,57 +132,35 @@ kable(data.frame(n = dataset$n, N = dataset$N, percentage = dataset$percentage,
                  true_tau1 =dataset$true_tau1, 
                  zipf_param = dataset$zipf_param))
 
-# 1 ] DP estimation
+set.seed(1234)
+model_checking_PY(dataset$frequencies)
+model_checking_DP(dataset$frequencies)
 
-max_EPPF_DP(dataset$frequencies)
+# Parameter estimation
+out_PY  <- max_EPPF_PY(dataset$frequencies)
+tau1_PY <- tau1_py(dataset$m1, dataset$n, out_PY$par[1], out_PY$par[2], dataset$N)
+PY_sim  <- tau1_py_sim(dataset$frequencies, out_PY$par[1], out_PY$par[2],  dataset$N, R = 1000)
+# PY_sim2  <- tau1_py_sim2(dataset$frequencies, out_PY$par[1], out_PY$par[2],  dataset$N)
 
-# Theta estimation via MLE
-theta_hat <- max_EPPF_DP(dataset$frequencies)$par
+#hist(PY_sim)
+#hist(PY_sim2)
 
-# Estimation of tau1_dp
-dataset$tau1_dp <- tau1_dp(dataset$m1, dataset$n, theta_hat, dataset$N)
+PY_lower <- quantile(PY_sim, 0.01/2)
+PY_upper <- quantile(PY_sim, 1 - 0.01/2)
 
-dataset$true_tau1
-dataset$tau1_dp
+# Dirichlet process estimation
+out_DP    <- max_EPPF_DP(dataset$frequencies)
+tau1_DP   <- tau1_dp(dataset$m1, dataset$n, out_DP$par[1], dataset$N)
+DP_lower <- qhyper(0.01/2, out_DP$par[1] + dataset$n - 1, dataset$N - dataset$n, dataset$m1)
+DP_upper <- qhyper(1 - 0.01/2, out_DP$par[1] + dataset$n - 1, dataset$N - dataset$n, dataset$m1)
 
-# EXACT uncertainty quantification using MonteCarlo
-sim_dp  <- tau1_py_sim(dataset$frequencies, theta_hat, 0, dataset$N, R = 1000)
-dataset$lower_dp <- quantile(sim_dp, 0.025)
-dataset$upper_dp <- quantile(sim_dp, 0.975)
-
-# # Binomial approximation
-# dataset$tau1_dp_binom <- dataset$m1 * dataset$n / dataset$N
-# dataset$lower_dp_binom <- qbinom(0.025,dataset$m1, dataset$n / dataset$N)
-# dataset$upper_dp_binom <- qbinom(0.975,dataset$m1, dataset$n / dataset$N)
-
-# 2 ] PY estimation
-
-param_hat <- max_EPPF_PY(dataset$frequencies)
-theta_hat <- param_hat$par[1]
-alpha_hat <- param_hat$par[2]
-
-dataset$tau1_py <- tau1_py(dataset$m1, dataset$n, theta_hat, alpha_hat, dataset$N)
-
-dataset$true_tau1
-dataset$tau1_py 
-
-# Uncertainty quantification
-sim_py <- tau1_py_sim(dataset$frequencies, theta_hat, alpha_hat, dataset$N, R = 1000)
-dataset$lower_py <- quantile(sim_py, 0.025)
-dataset$upper_py <- quantile(sim_py, 0.975)
-
-
-# # Binomial approximation
-# dataset$tau1_py_binom <- dataset$m1 * (dataset$n / dataset$N)^(1 - alpha_hat)
-# dataset$lower_py_binom <- qbinom(0.025,dataset$m1, (dataset$n / dataset$N)^(1 - alpha_hat))
-# dataset$upper_py_binom <- qbinom(0.975,dataset$m1, (dataset$n / dataset$N)^(1 - alpha_hat))
-
-
-# Results -----------------------------------
-kable(data.frame(true_tau1 = dataset$true_tau1, 
-                 tau_dp       = dataset$tau1_dp,  CI_dp = paste("[", dataset$lower_dp,", ", dataset$upper_dp,"]",sep=""),
-                 tau_py       = dataset$tau1_py, CI_py = paste("[", dataset$lower_py,", ", dataset$upper_py,"]",sep="")
-))
+# Summary
+kable(data.frame(n = dataset$n, N = dataset$N, percentage = round(dataset$percentage,2),
+                 m1 = dataset$m1,
+                 K_n = dataset$K_n,
+                 true_tau1 = dataset$true_tau1,
+                 tau1_py = tau1_PY, CI_PY = paste("[", PY_lower,", ", PY_upper,"]",sep=""),
+                 tau1_dp = tau1_DP, CI_DP = paste("[", DP_lower,", ", DP_upper,"]",sep="")))
 
 # -------------------------------------------
 # Scenario 1 - zipf_param = 1.1
@@ -254,57 +178,33 @@ kable(data.frame(n = dataset$n, N = dataset$N, percentage = dataset$percentage,
                  K_n =dataset$K_n,  K_N = dataset$K_N, H = dataset$H, m1 =dataset$m1, 
                  true_tau1 =dataset$true_tau1, 
                  zipf_param = dataset$zipf_param))
+set.seed(1234)
+model_checking_PY(dataset$frequencies)
+model_checking_DP(dataset$frequencies)
 
-# 1 ] DP estimation
+# Parameter estimation
+out_PY  <- max_EPPF_PY(dataset$frequencies)
+tau1_PY <- tau1_py(dataset$m1, dataset$n, out_PY$par[1], out_PY$par[2], dataset$N)
+PY_sim  <- tau1_py_sim(dataset$frequencies, out_PY$par[1], out_PY$par[2],  dataset$N, R = 1000)
+# PY_sim2  <- tau1_py_sim2(dataset$frequencies, out_PY$par[1], out_PY$par[2],  dataset$N)
 
-max_EPPF_DP(dataset$frequencies)
+#hist(PY_sim)
+#hist(PY_sim2)
 
-# Theta estimation via MLE
-theta_hat <- max_EPPF_DP(dataset$frequencies)$par
+PY_lower <- quantile(PY_sim, 0.01/2)
+PY_upper <- quantile(PY_sim, 1 - 0.01/2)
 
-# Estimation of tau1_dp
-dataset$tau1_dp <- tau1_dp(dataset$m1, dataset$n, theta_hat, dataset$N)
+# Dirichlet process estimation
+out_DP    <- max_EPPF_DP(dataset$frequencies)
+tau1_DP   <- tau1_dp(dataset$m1, dataset$n, out_DP$par[1], dataset$N)
+DP_lower <- qhyper(0.01/2, out_DP$par[1] + dataset$n - 1, dataset$N - dataset$n, dataset$m1)
+DP_upper <- qhyper(1 - 0.01/2, out_DP$par[1] + dataset$n - 1, dataset$N - dataset$n, dataset$m1)
 
-dataset$true_tau1
-dataset$tau1_dp
-
-# EXACT uncertainty quantification using MonteCarlo
-sim_dp  <- tau1_py_sim(dataset$frequencies, theta_hat, 0, dataset$N, R = 1000)
-dataset$lower_dp <- quantile(sim_dp, 0.025)
-dataset$upper_dp <- quantile(sim_dp, 0.975)
-
-# # Binomial approximation
-# dataset$tau1_dp_binom <- dataset$m1 * dataset$n / dataset$N
-# dataset$lower_dp_binom <- qbinom(0.025,dataset$m1, dataset$n / dataset$N)
-# dataset$upper_dp_binom <- qbinom(0.975,dataset$m1, dataset$n / dataset$N)
-
-# 2 ] PY estimation
-
-param_hat <- max_EPPF_PY(dataset$frequencies)
-theta_hat <- param_hat$par[1]
-alpha_hat <- param_hat$par[2]
-
-dataset$tau1_py <- tau1_py(dataset$m1, dataset$n, theta_hat, alpha_hat, dataset$N)
-
-dataset$true_tau1
-dataset$tau1_py 
-
-# Uncertainty quantification
-sim_py <- tau1_py_sim(dataset$frequencies, theta_hat, alpha_hat, dataset$N, R = 1000)
-dataset$lower_py <- quantile(sim_py, 0.025)
-dataset$upper_py <- quantile(sim_py, 0.975)
-
-
-# # Binomial approximation
-# dataset$tau1_py_binom <- dataset$m1 * (dataset$n / dataset$N)^(1 - alpha_hat)
-# dataset$lower_py_binom <- qbinom(0.025,dataset$m1, (dataset$n / dataset$N)^(1 - alpha_hat))
-# dataset$upper_py_binom <- qbinom(0.975,dataset$m1, (dataset$n / dataset$N)^(1 - alpha_hat))
-
-
-# Results -----------------------------------
-
-kable(data.frame(true_tau1 = dataset$true_tau1, 
-                 tau_dp       = dataset$tau1_dp,  CI_dp = paste("[", dataset$lower_dp,", ", dataset$upper_dp,"]",sep=""),
-                 tau_py       = dataset$tau1_py, CI_py = paste("[", dataset$lower_py,", ", dataset$upper_py,"]",sep="")
-))
+# Summary
+kable(data.frame(n = dataset$n, N = dataset$N, percentage = round(dataset$percentage,2),
+                 m1 = dataset$m1,
+                 K_n = dataset$K_n,
+                 true_tau1 = dataset$true_tau1,
+                 tau1_py = tau1_PY, CI_PY = paste("[", PY_lower,", ", PY_upper,"]",sep=""),
+                 tau1_dp = tau1_DP, CI_DP = paste("[", DP_lower,", ", DP_upper,"]",sep="")))
 

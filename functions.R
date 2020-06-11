@@ -188,6 +188,8 @@ model_checking_DP <- function(frequencies, percentage=0.75, step = 100){
   
   est_tau1  <- numeric(step)
   true_tau1 <- numeric(step)
+  lower_tau1 <- numeric(step)
+  upper_tau1 <- numeric(step)
   
   for(i in 1:step){
     
@@ -199,9 +201,12 @@ model_checking_DP <- function(frequencies, percentage=0.75, step = 100){
     # True tau1
     est_tau1[i]   <- tau1_dp(m1 = m1, n = n, theta = fit_DP$par[1], N = nn[i])
     true_tau1[i]  <- sum((freq_full1 == 1) & (freq_observed == 1))
+    lower_tau1[i] <- qhyper(0.025, fit_DP$par[1] + n - 1, nn[i] -n, m1)
+    upper_tau1[i] <- qhyper(0.975, fit_DP$par[1] + n - 1, nn[i] - n, m1)
+    
   } 
   
-  data_plot <- data.frame(nn = nn, est_tau1 = est_tau1, true_tau1 = true_tau1)
-  p <- ggplot(data_plot, aes(x = nn, y = est_tau1))  + theme_bw() + xlab("# of observations") + ylab(expression(tau[1])) + geom_point(aes(y = true_tau1))+ geom_line(col="blue")
+  data_plot <- data.frame(nn = nn, est_tau1 = est_tau1, true_tau1 = true_tau1, lower_tau1 = lower_tau1, upper_tau1 = upper_tau1)
+  p <- ggplot(data_plot, aes(x = nn, y = est_tau1, ymin = lower_tau1, ymax = upper_tau1))  + theme_bw() + xlab("# of observations") + ylab(expression(tau[1])) + geom_point(aes(y = true_tau1))+ geom_line(col="blue") + geom_ribbon(alpha=0.1)
   p
 }
