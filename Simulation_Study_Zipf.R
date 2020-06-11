@@ -179,7 +179,7 @@ kable(data.frame(n = dataset$n, N = dataset$N, percentage = dataset$percentage,
                  true_tau1 =dataset$true_tau1, 
                  zipf_param = dataset$zipf_param))
 set.seed(1234)
-model_checking_PY(dataset$frequencies)
+model_checking_PY(dataset$frequencies, percentage = 0.1)
 model_checking_DP(dataset$frequencies)
 
 # Parameter estimation
