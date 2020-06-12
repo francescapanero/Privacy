@@ -119,16 +119,20 @@ tau1_py_sim <- function(frequencies, theta, alpha, N, R = 100, verbose=TRUE){
 }
 
 
-# expected_cl_py <- function(n, alpha, theta){
-#   n <- as.integer(n)
-#   if(alpha==0) {
-#       out <- theta * sum(1/(theta - 1 + 1:n))
-#   } else {
-#       out <- 1/alpha*exp(lgamma(theta + alpha + n) - lgamma(theta + alpha) - lgamma(theta + n) + lgamma(theta + 1)) - theta/alpha
-#   }
-# 
-#   return(out)
-# }
+expected_cl_py <- function(n, alpha, theta){
+  n <- as.integer(n)
+  if(alpha==0) {
+      out <- theta * sum(1/(theta - 1 + 1:n))
+  } else {
+      out <- 1/alpha*exp(lgamma(theta + alpha + n) - lgamma(theta + alpha) - lgamma(theta + n) + lgamma(theta + 1)) - theta/alpha
+  }
+
+  return(out)
+}
+
+expected_m1 <- function(n, alpha, theta){
+  n/(n + theta - 1)*(theta + alpha*expected_cl_py(n-1,alpha,theta))
+}
 
 model_checking_PY <- function(frequencies, percentage=0.75, step = 100){
   
@@ -210,3 +214,22 @@ model_checking_DP <- function(frequencies, percentage=0.75, step = 100){
   p <- ggplot(data_plot, aes(x = nn, y = est_tau1, ymin = lower_tau1, ymax = upper_tau1))  + theme_bw() + xlab("# of observations") + ylab(expression(tau[1])) + geom_point(aes(y = true_tau1))+ geom_line(col="blue") + geom_ribbon(alpha=0.1)
   p
 }
+
+frequency_check_PY <- function(frequencies){
+  
+  n      <- sum(frequencies)
+  fit_PY <- max_EPPF_PY(frequencies)
+  sigma  <- fit_PY$par[2]
+  
+  
+  M_l <- as.numeric(table(factor(frequencies, levels=1:n)))
+  P_l <- M_l / sum(M_l)
+  
+  idx <- which(P_l > 0)
+  
+  data_plot <- data.frame(Size = idx, P_l = P_l[idx], Theoretical = exp(log(sigma) + lgamma(idx - sigma) - lgamma(1-sigma) - lfactorial(idx)))
+  p <- ggplot(data=data_plot,aes(x = Size, y = P_l))  + geom_point() +  geom_line(aes(y = Theoretical),color="blue", linetype="dashed")+ scale_y_log10() + scale_x_log10() + theme_bw() + xlab(expression(M[ln])) + ylab(expression(M[ln]/K[n]))
+  p                             
+}
+
+

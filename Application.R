@@ -20,9 +20,6 @@ alpha <- 0.01
 model_checking_PY(dataset$frequencies, percentage = 0.80)
 model_checking_DP(dataset$frequencies, percentage = 0.80)
 
-plot(log(1:dataset$K_n),log(sort(dataset$frequencies/dataset$n,decreasing = TRUE)))
-
-
 # Parameter estimation
 out_PY  <- max_EPPF_PY(dataset$frequencies)
 tau1_PY <- tau1_py(dataset$m1, dataset$n, out_PY$par[1], out_PY$par[2], dataset$N)

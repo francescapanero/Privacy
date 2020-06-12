@@ -37,16 +37,20 @@ zipf_param <- 2
 set.seed(123)
 dataset <- dataset_creation_zipf(n = n, zipf_param = zipf_param, H = H, N = N)
 
+out_PY  <- max_EPPF_PY(dataset$frequencies)
+
 kable(data.frame(n = dataset$n, N = dataset$N, percentage = dataset$percentage, 
                  K_n =dataset$K_n,  K_N = dataset$K_N, H = dataset$H, m1 =dataset$m1, 
                  true_tau1 =dataset$true_tau1, 
-                 zipf_param = dataset$zipf_param))
+                 zipf_param = dataset$zipf_param,
+                 K_n_hat = expected_cl_py(dataset$n, out_PY$par[2], out_PY$par[1]),
+                 m1_hat  = expected_m1(dataset$n, out_PY$par[2], out_PY$par[1])))
 
-model_checking_PY(dataset$frequencies)
+frequency_check_PY(dataset$frequencies)
+model_checking_PY(dataset$frequencies, percentage = 0.1)
 model_checking_DP(dataset$frequencies)
 
 # Parameter estimation
-out_PY  <- max_EPPF_PY(dataset$frequencies)
 tau1_PY <- tau1_py(dataset$m1, dataset$n, out_PY$par[1], out_PY$par[2], dataset$N)
 PY_sim  <- tau1_py_sim(dataset$frequencies, out_PY$par[1], out_PY$par[2],  dataset$N)
 #PY_sim2  <- tau1_py_sim2(dataset$frequencies, out_PY$par[1], out_PY$par[2],  dataset$N)
@@ -80,14 +84,19 @@ zipf_param <- 1.5
 set.seed(123)
 dataset <- dataset_creation_zipf(n = n, zipf_param = zipf_param, H = H, N = N)
 
+out_PY  <- max_EPPF_PY(dataset$frequencies)
+
 kable(data.frame(n = dataset$n, N = dataset$N, percentage = dataset$percentage, 
                  K_n =dataset$K_n,  K_N = dataset$K_N, H = dataset$H, m1 =dataset$m1, 
                  true_tau1 =dataset$true_tau1, 
-                 zipf_param = dataset$zipf_param))
+                 zipf_param = dataset$zipf_param,
+                 K_n_hat = expected_cl_py(dataset$n, out_PY$par[2], out_PY$par[1]),
+                 m1_hat  = expected_m1(dataset$n, out_PY$par[2], out_PY$par[1])))
 
-set.seed(1234)
-model_checking_PY(dataset$frequencies)
+frequency_check_PY(dataset$frequencies)
+model_checking_PY(dataset$frequencies, percentage = 0.1)
 model_checking_DP(dataset$frequencies)
+
 
 # Parameter estimation
 out_PY  <- max_EPPF_PY(dataset$frequencies)
@@ -103,6 +112,10 @@ PY_upper <- quantile(PY_sim, 1 - 0.01/2)
 
 # Dirichlet process estimation
 out_DP    <- max_EPPF_DP(dataset$frequencies)
+expected_cl_py(dataset$n, 0, out_DP$par[1])
+expected_m1(dataset$n, 0, out_DP$par[1])
+
+
 tau1_DP   <- tau1_dp(dataset$m1, dataset$n, out_DP$par[1], dataset$N)
 DP_lower <- qhyper(0.01/2, out_DP$par[1] + dataset$n - 1, dataset$N - dataset$n, dataset$m1)
 DP_upper <- qhyper(1 - 0.01/2, out_DP$par[1] + dataset$n - 1, dataset$N - dataset$n, dataset$m1)
@@ -127,14 +140,19 @@ zipf_param <- 1.3
 set.seed(123)
 dataset <- dataset_creation_zipf(n = n, zipf_param = zipf_param, H = H, N = N)
 
+out_PY  <- max_EPPF_PY(dataset$frequencies)
+
 kable(data.frame(n = dataset$n, N = dataset$N, percentage = dataset$percentage, 
                  K_n =dataset$K_n,  K_N = dataset$K_N, H = dataset$H, m1 =dataset$m1, 
                  true_tau1 =dataset$true_tau1, 
-                 zipf_param = dataset$zipf_param))
+                 zipf_param = dataset$zipf_param,
+                 K_n_hat = expected_cl_py(dataset$n, out_PY$par[2], out_PY$par[1]),
+                 m1_hat  = expected_m1(dataset$n, out_PY$par[2], out_PY$par[1])))
 
-set.seed(1234)
-model_checking_PY(dataset$frequencies)
+frequency_check_PY(dataset$frequencies)
+model_checking_PY(dataset$frequencies, percentage = 0.1)
 model_checking_DP(dataset$frequencies)
+
 
 # Parameter estimation
 out_PY  <- max_EPPF_PY(dataset$frequencies)
@@ -174,11 +192,16 @@ zipf_param <- 1.1
 set.seed(123)
 dataset <- dataset_creation_zipf(n = n, zipf_param = zipf_param, H = H, N = N)
 
+out_PY  <- max_EPPF_PY(dataset$frequencies)
+
 kable(data.frame(n = dataset$n, N = dataset$N, percentage = dataset$percentage, 
                  K_n =dataset$K_n,  K_N = dataset$K_N, H = dataset$H, m1 =dataset$m1, 
                  true_tau1 =dataset$true_tau1, 
-                 zipf_param = dataset$zipf_param))
-set.seed(1234)
+                 zipf_param = dataset$zipf_param,
+                 K_n_hat = expected_cl_py(dataset$n, out_PY$par[2], out_PY$par[1]),
+                 m1_hat  = expected_m1(dataset$n, out_PY$par[2], out_PY$par[1])))
+
+frequency_check_PY(dataset$frequencies)
 model_checking_PY(dataset$frequencies, percentage = 0.1)
 model_checking_DP(dataset$frequencies)
 
