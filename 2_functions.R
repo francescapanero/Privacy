@@ -6,7 +6,7 @@ Rcpp::sourceCpp("3_cluster_py.cpp")
 
 
 logEPPF_PY <- function(theta, alpha, frequencies) {
-  if (any(alpha < 0, theta <= -alpha)) {
+  if (any(alpha < 0, theta <= - alpha + 1e-04)) {
     return(-Inf)
   }
 
@@ -39,7 +39,7 @@ max_EPPF_PY <- function(frequencies) {
   out <- nlminb(
     start = start,
     function(param) -logEPPF_PY(theta = param[1], alpha = param[2], frequencies = frequencies),
-    lower = c(-Inf, -Inf), upper = c(Inf, 1 - 1e-10)
+    lower = c(-Inf, 1e-16), upper = c(Inf, 1 - 1e-10)
   )
   return(out)
 }
