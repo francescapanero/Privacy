@@ -7,7 +7,7 @@ library(knitr)
 rm(list = ls())
 
 load("data/IPMUS.RData")
-source("functions.R")
+source("2_functions.R")
 
 # -------------------------------
 # 5% dataset
@@ -16,19 +16,32 @@ source("functions.R")
 dataset <- data_5perc
 alpha <- 0.01
 
-out_PY <- max_EPPF_PY(dataset$frequencies)
+# Summary of the dataset --------------------------
 
 kable(data.frame(
   n = dataset$n, N = dataset$N, percentage = dataset$percentage,
   K_n = dataset$K_n, K_N = dataset$K_N,
   K_n_hat = expected_cl_py(dataset$n, out_PY$par[2], out_PY$par[1]),
   m1 = dataset$m1,
-  m1_hat = expected_m1(dataset$n, out_PY$par[2], out_PY$par[1])
+  m1_hat = expected_m_py(1, dataset$n, out_PY$par[2], out_PY$par[1])
 ))
 
+# MODEL CHECKING ---------------
+
+out_PY <- max_EPPF_PY(dataset$frequencies)
+out_DP <- max_EPPF_DP(dataset$frequencies)
+
+# Comparison between M_l and the asymptotic formula
 frequency_check_PY(dataset$frequencies)
-model_checking_PY(dataset$frequencies, percentage = 0.1)
-model_checking_DP(dataset$frequencies)
+
+# Comparison between M_l and the expected values
+M_l <- as.numeric(table(factor(dataset$frequencies, levels = 1:dataset$n)))
+
+# PY comparison
+tab <- rbind(PY = expected_m_py(1:15, dataset$n, out_PY$par[2], out_PY$par[1]),
+             DP = expected_m_dp(1:15, dataset$n, out_DP$par[1]),
+             Data = M_l[1:15])
+tab
 
 
 # Parameter estimation
@@ -67,8 +80,8 @@ dataset <- data_10perc
 alpha <- 0.01
 
 # table(dataset$frequencies)
-model_checking_PY(dataset$frequencies, percentage = 0.80)
-model_checking_DP(dataset$frequencies, percentage = 0.80)
+training_test_PY(dataset$frequencies, percentage = 0.80)
+training_test_DP(dataset$frequencies, percentage = 0.80)
 
 
 # Parameter estimation

@@ -17,11 +17,11 @@ data_full <- data_full %>%
   filter(AGE > 20) %>%
   mutate(id = 1:n())
 
-# dataset <- data_full %>% group_by(REGION, RACED, OCC) %>% count()
 dataset <- data_full %>%
-  group_by(REGION, RACED, OCC, SEX) %>%
+  group_by(REGION, RACED, OCC) %>%
   count()
 
+length(unique(dataset$REGION))*length(unique(dataset$RACED))*length(unique(dataset$OCC))
 
 freq_full <- dataset$n
 points_full <- factor(rep(1:length(freq_full), freq_full)) # it is important they are factor

@@ -6,12 +6,10 @@ Rcpp::sourceCpp("3_cluster_py.cpp")
 
 
 logEPPF_PY <- function(theta, alpha, frequencies) {
-  if (alpha < 0) {
+  if (any(alpha < 0, theta <= -alpha)) {
     return(-Inf)
   }
-  if (theta > -alpha) {
-    return(-Inf)
-  }
+
 
   # Sample size
   n <- sum(frequencies)
