@@ -14,17 +14,6 @@ source("2_functions.R")
 # -------------------------------
 
 dataset <- data_5perc
-alpha <- 0.01
-
-# Summary of the dataset --------------------------
-
-kable(data.frame(
-  n = dataset$n, N = dataset$N, percentage = dataset$percentage,
-  K_n = dataset$K_n, K_N = dataset$K_N,
-  K_n_hat = expected_cl_py(dataset$n, out_PY$par[2], out_PY$par[1]),
-  m1 = dataset$m1,
-  m1_hat = expected_m_py(1, dataset$n, out_PY$par[2], out_PY$par[1])
-))
 
 # MODEL CHECKING ---------------
 
@@ -32,7 +21,7 @@ out_PY <- max_EPPF_PY(dataset$frequencies)
 out_DP <- max_EPPF_DP(dataset$frequencies)
 
 # Comparison between M_l and the asymptotic formula
-frequency_check_PY(dataset$frequencies)
+# frequency_check_PY(dataset$frequencies)
 
 # Comparison between M_l and the expected values
 M_l <- as.numeric(table(factor(dataset$frequencies, levels = 1:dataset$n)))
@@ -41,17 +30,19 @@ M_l <- as.numeric(table(factor(dataset$frequencies, levels = 1:dataset$n)))
 tab <- rbind(PY = expected_m_py(1:15, dataset$n, out_PY$par[2], out_PY$par[1]),
              DP = expected_m_dp(1:15, dataset$n, out_DP$par[1]),
              Data = M_l[1:15])
-tab
 
+colnames(tab) <- 1:15
+kable(tab, digits=0)
 
-# Parameter estimation
+# ---------------------------
+# PY estimation
+# ---------------------------
+
+alpha <- 0.01 # Credible intervals percentage
+
 out_PY <- max_EPPF_PY(dataset$frequencies)
 tau1_PY <- tau1_py(dataset$m1, dataset$n, out_PY$par[1], out_PY$par[2], dataset$N)
 PY_sim <- tau1_py_sim(dataset$frequencies, out_PY$par[1], out_PY$par[2], dataset$N)
-PY_sim2 <- tau1_py_sim2(dataset$frequencies, out_PY$par[1], out_PY$par[2], dataset$N)
-
-hist(PY_sim)
-hist(PY_sim2)
 
 PY_lower <- quantile(PY_sim, alpha / 2)
 PY_upper <- quantile(PY_sim, 1 - alpha / 2)
@@ -77,22 +68,35 @@ kable(data.frame(
 # -------------------------------
 
 dataset <- data_10perc
-alpha <- 0.01
 
-# table(dataset$frequencies)
-training_test_PY(dataset$frequencies, percentage = 0.80)
-training_test_DP(dataset$frequencies, percentage = 0.80)
+# MODEL CHECKING ---------------
 
+out_PY <- max_EPPF_PY(dataset$frequencies)
+out_DP <- max_EPPF_DP(dataset$frequencies)
 
-# Parameter estimation
+# Comparison between M_l and the asymptotic formula
+# frequency_check_PY(dataset$frequencies)
+
+# Comparison between M_l and the expected values
+M_l <- as.numeric(table(factor(dataset$frequencies, levels = 1:dataset$n)))
+
+# PY comparison
+tab <- rbind(PY = expected_m_py(1:15, dataset$n, out_PY$par[2], out_PY$par[1]),
+             DP = expected_m_dp(1:15, dataset$n, out_DP$par[1]),
+             Data = M_l[1:15])
+
+colnames(tab) <- 1:15
+kable(tab, digits=0)
+
+# ---------------------------
+# PY estimation
+# ---------------------------
+
+alpha <- 0.01 # Credible intervals percentage
+
 out_PY <- max_EPPF_PY(dataset$frequencies)
 tau1_PY <- tau1_py(dataset$m1, dataset$n, out_PY$par[1], out_PY$par[2], dataset$N)
-
-PY_sim <- tau1_py_sim(dataset$frequencies, out_PY$par[1], out_PY$par[2], dataset$N, R = 1000)
-# PY_sim2  <- tau1_py_sim2(dataset$frequencies, out_PY$par[1], out_PY$par[2],  dataset$N, R = 1000)
-
-# hist(PY_sim)
-# hist(PY_sim2)
+PY_sim <- tau1_py_sim(dataset$frequencies, out_PY$par[1], out_PY$par[2], dataset$N)
 
 PY_lower <- quantile(PY_sim, alpha / 2)
 PY_upper <- quantile(PY_sim, 1 - alpha / 2)
