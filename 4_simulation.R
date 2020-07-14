@@ -34,7 +34,6 @@ dataset_creation_zipf <- function(n, zipf_param, N) {
 
 dataset_creation_geom <- function(n, N, p) {
   
-  # Old implementation using truncated zipf laws
   points_full <- factor(rgeom(N, p = p))
   points_obs <- sample(points_full, n, replace = FALSE)
   
@@ -53,12 +52,10 @@ dataset_creation_geom <- function(n, N, p) {
   )
 }
 
-dataset_creation_mixture <- function(n, N, p, zipf_param) {
+dataset_creation_zipfH <- function(n, N, zipf_param, H) {
   
   # Old implementation using truncated zipf laws
-  N_zipf  <- rbinom(1, N, 0.5)
-  N_geom  <- N - N_zipf
-  points_full <- factor(c(random$zipf(zipf_param, N_zipf), rgeom(N_geom, p = p)))
+  points_full <- factor(sample(1:H, N, prob=1/(1:H)^zipf_param, replace=TRUE))
   points_obs <- sample(points_full, n, replace = FALSE)
   
   # Observed frequencies
@@ -86,7 +83,7 @@ n <- 100000L
 
 # List of potential parameters
 zipf_param_list <- c(1.0526, 1.1765, 1.3333, 1.5385, 1.8182, 2.2222, 2.8571, 4, 6.6667, 20)
-zipf_param <- zipf_param_list[2]
+zipf_param <- zipf_param_list[4]
 
 set.seed(123)
 dataset <- dataset_creation_zipf(n = n, zipf_param = zipf_param,  N = N)
@@ -110,6 +107,8 @@ tab <- rbind(PY = expected_m_py(1:15, dataset$n, out_PY$par[2], out_PY$par[1]),
              Data = M_l[1:15])
 colnames(tab) <- 1:15
 kable(tab, digits=0)
+
+frequency_check_PY(dataset$frequencies)
 
 # PY estimation
 tau1_PY <- tau1_py(dataset$m1, dataset$n, out_PY$par[1], out_PY$par[2], dataset$N)
@@ -140,7 +139,6 @@ kable(data.frame(
 
 N <- 1000000L # Important to us L, otherwise is not recognized as integer
 n <- 100000L
-lambda <- 10^4
 
 set.seed(123)
 dataset <- dataset_creation_geom(n = n, N = N, p = 0.01)
@@ -164,6 +162,7 @@ tab <- rbind(PY = expected_m_py(1:15, dataset$n, out_PY$par[2], out_PY$par[1]),
              Data = M_l[1:15])
 colnames(tab) <- 1:15
 kable(tab, digits=0)
+frequency_check_PY(dataset$frequencies)
 
 # PY estimation
 tau1_PY <- tau1_py(dataset$m1, dataset$n, out_PY$par[1], out_PY$par[2], dataset$N)
@@ -188,18 +187,20 @@ kable(data.frame(
 ))
 
 # -------------------------------------------
-# Scenario 3 - Zipf
+# Scenario 3 - Truncated Zipf
 # -------------------------------------------
 
 N <- 1000000L # Important to us L, otherwise is not recognized as integer
 n <- 100000L
+H <- 10000000
 
 # List of potential parameters
 zipf_param_list <- c(1.0526, 1.1765, 1.3333, 1.5385, 1.8182, 2.2222, 2.8571, 4, 6.6667, 20)
-zipf_param <- zipf_param_list[3]
-p <- 0.1
+zipf_param <- zipf_param_list[2]
+
 set.seed(123)
-dataset <- dataset_creation_mixture(n = n, zipf_param = zipf_param, p = 0.1, N = N)
+
+dataset <- dataset_creation_zipfH(n = n, N = N, zipf_param = zipf_param, H = H)
 
 out_PY <- max_EPPF_PY(dataset$frequencies)
 
@@ -207,7 +208,6 @@ kable(data.frame(
   n = dataset$n, N = dataset$N, percentage = dataset$percentage,
   K_n = dataset$K_n, K_N = dataset$K_N, m1 = dataset$m1,
   true_tau1 = dataset$true_tau1,
-  zipf_param = dataset$zipf_param,
   K_n_hat = expected_cl_py(dataset$n, out_PY$par[2], out_PY$par[1]),
   m1_hat = expected_m_py(1, dataset$n, out_PY$par[2], out_PY$par[1])
 ))
@@ -220,6 +220,9 @@ tab <- rbind(PY = expected_m_py(1:15, dataset$n, out_PY$par[2], out_PY$par[1]),
              Data = M_l[1:15])
 colnames(tab) <- 1:15
 kable(tab, digits=0)
+
+# Graphical representation of the above table
+frequency_check_PY(dataset$frequencies)
 
 # PY estimation
 tau1_PY <- tau1_py(dataset$m1, dataset$n, out_PY$par[1], out_PY$par[2], dataset$N)

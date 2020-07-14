@@ -113,22 +113,23 @@ expected_m_py <- Vectorize(expected_m_py, vectorize.args = "m")
 frequency_check_PY <- function(frequencies) {
   n <- sum(frequencies)
   fit_PY <- max_EPPF_PY(frequencies)
-  sigma <- fit_PY$par[2]
+  theta <- fit_PY$par[1]
+  alpha <- fit_PY$par[2]
 
 
   M_l <- as.numeric(table(factor(frequencies, levels = 1:n)))
-  P_l <- M_l / sum(M_l)
+  #P_l <- M_l / sum(M_l)
 
-  idx <- which(P_l > 0)
+  idx <- 1:(which.min(M_l) -1)# which(P_l > 0)
 
-  data_plot <- data.frame(Size = idx, P_l = P_l[idx], Theoretical = exp(log(sigma) + lgamma(idx - sigma) - lgamma(1 - sigma) - lfactorial(idx)))
-  p <- ggplot(data = data_plot, aes(x = Size, y = P_l)) +
+  data_plot <- data.frame(Size = idx, M_l = M_l[idx], Theoretical = expected_m_py(idx, n = n, alpha = alpha, theta=theta))
+  p <- ggplot(data = data_plot, aes(x = Size, y = M_l)) +
     geom_point() +
     geom_line(aes(y = Theoretical), color = "blue", linetype = "dashed") +
     scale_y_log10() +
     scale_x_log10() +
     theme_bw() +
-    xlab(expression(M[ln])) +
-    ylab(expression(M[ln] / K[n]))
+    xlab("l") +
+    ylab(expression(M[l]))
   p
 }
