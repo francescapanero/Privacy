@@ -52,10 +52,11 @@ dataset_creation_geom <- function(n, N, p) {
   )
 }
 
-dataset_creation_zipfH <- function(n, N, zipf_param, H) {
+dataset_creation_probs <- function(n, N, probs) {
   
   # Old implementation using truncated zipf laws
-  points_full <- factor(sample(1:H, N, prob=1/(1:H)^zipf_param, replace=TRUE))
+  H <- length(probs)
+  points_full <- factor(sample(1:H, N, prob=probs, replace=TRUE))
   points_obs <- sample(points_full, n, replace = FALSE)
   
   # Observed frequencies
@@ -187,20 +188,20 @@ kable(data.frame(
 ))
 
 # -------------------------------------------
-# Scenario 3 - Truncated Zipf
+# Scenario 3 - Custom probabilities
 # -------------------------------------------
 
 N <- 1000000L # Important to us L, otherwise is not recognized as integer
 n <- 100000L
-H <- 10000000
-
-# List of potential parameters
-zipf_param_list <- c(1.0526, 1.1765, 1.3333, 1.5385, 1.8182, 2.2222, 2.8571, 4, 6.6667, 20)
-zipf_param <- zipf_param_list[2]
+H <- 100000
 
 set.seed(123)
 
-dataset <- dataset_creation_zipfH(n = n, N = N, zipf_param = zipf_param, H = H)
+# Define the probabilities of the cells directly
+probs <- c(rep(50, 1000), rep(1, 10^4), rep(0.1,10^4)); probs <- probs/sum(probs)
+
+# Generating the dataset
+dataset <- dataset_creation_probs(n = n, N = N, probs = probs)
 
 out_PY <- max_EPPF_PY(dataset$frequencies)
 

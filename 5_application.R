@@ -33,6 +33,7 @@ tab <- rbind(PY = expected_m_py(1:15, dataset$n, out_PY$par[2], out_PY$par[1]),
 
 colnames(tab) <- 1:15
 kable(tab, digits=0)
+frequency_check_PY(dataset$frequencies)
 
 # ---------------------------
 # PY estimation
