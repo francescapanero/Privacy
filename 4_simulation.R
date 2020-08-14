@@ -1,11 +1,14 @@
 rm(list = ls())
 
+source("2_functions.R")
 library(knitr)
+library(ggplot2)
 library(reticulate) # Library that interface R to python
 use_condaenv() # Use python anaconda
+
 random <- import("numpy.random") # Import python libraries
 
-source("2_functions.R")
+
 
 dataset_creation_zipf <- function(n, zipf_param, N) {
 
@@ -123,6 +126,12 @@ tau1_DP <- tau1_dp(dataset$m1, dataset$n, out_DP$par[1], dataset$N)
 DP_lower <- qhyper(0.01 / 2, out_DP$par[1] + dataset$n - 1, dataset$N - dataset$n, dataset$m1)
 DP_upper <- qhyper(1 - 0.01 / 2, out_DP$par[1] + dataset$n - 1, dataset$N - dataset$n, dataset$m1)
 
+# Bethlehem and Skinner estimators
+estim <- tau1_bs(dataset$frequencies, dataset$N)
+tau1_bet <- estim[1]
+tau1_skin <- estim[2]
+
+
 # Summary
 kable(data.frame(
   n = dataset$n, N = dataset$N, percentage = round(dataset$percentage, 2),
@@ -130,9 +139,20 @@ kable(data.frame(
   K_n = dataset$K_n,
   true_tau1 = dataset$true_tau1,
   tau1_py = tau1_PY, CI_PY = paste("[", PY_lower, ", ", PY_upper, "]", sep = ""),
-  tau1_dp = tau1_DP, CI_DP = paste("[", DP_lower, ", ", DP_upper, "]", sep = "")
+  tau1_dp = tau1_DP, CI_DP = paste("[", DP_lower, ", ", DP_upper, "]", sep = ""),
+  tau1_bet = tau1_bet, tau1_skin = tau1_skin
 ))
 
+# Plot estimates and confidence intervals
+type = c('PY', 'DP', 'B', 'S')
+estimates = c(tau1_PY, tau1_DP, tau1_bet, tau1_skin)
+df <- data.frame(type = factor(type, levels = type[order(estimates)]), estim = estimates,
+                 lower_CI = c(PY_lower, DP_lower, NA, NA), upper_CI = c(PY_upper, DP_upper, NA, NA))
+
+p <- ggplot(df, aes(type, estim, color=type))
+p + geom_pointrange(aes(ymin = lower_CI, ymax = upper_CI)) + 
+  theme(legend.position = "none") + xlab('') + ylab('estimate') + ggtitle(paste0('Zipf ', zipf_param)) +
+  theme(plot.title = element_text(hjust = 0.5)) + geom_hline(yintercept=dataset$true_tau1)
 
 # -------------------------------------------
 # Scenario 2 - Geometric distribution
@@ -142,7 +162,8 @@ N <- 1000000L # Important to us L, otherwise is not recognized as integer
 n <- 100000L
 
 set.seed(123)
-dataset <- dataset_creation_geom(n = n, N = N, p = 0.01)
+prob = 0.005
+dataset <- dataset_creation_geom(n = n, N = N, p = prob)
 
 out_PY <- max_EPPF_PY(dataset$frequencies)
 out_DP <- max_EPPF_DP(dataset$frequencies)
@@ -177,6 +198,11 @@ tau1_DP <- tau1_dp(dataset$m1, dataset$n, out_DP$par[1], dataset$N)
 DP_lower <- qhyper(0.01 / 2, out_DP$par[1] + dataset$n - 1, dataset$N - dataset$n, dataset$m1)
 DP_upper <- qhyper(1 - 0.01 / 2, out_DP$par[1] + dataset$n - 1, dataset$N - dataset$n, dataset$m1)
 
+# Bethlehem and Skinner estimators
+estim <- tau1_bs(dataset$frequencies, dataset$N)
+tau1_bet <- estim[1]
+tau1_skin <- estim[2]
+
 # Summary
 kable(data.frame(
   n = dataset$n, N = dataset$N, percentage = round(dataset$percentage, 2),
@@ -184,8 +210,20 @@ kable(data.frame(
   K_n = dataset$K_n,
   true_tau1 = dataset$true_tau1,
   tau1_py = tau1_PY, CI_PY = paste("[", PY_lower, ", ", PY_upper, "]", sep = ""),
-  tau1_dp = tau1_DP, CI_DP = paste("[", DP_lower, ", ", DP_upper, "]", sep = "")
+  tau1_dp = tau1_DP, CI_DP = paste("[", DP_lower, ", ", DP_upper, "]", sep = ""),
+  tau1_bet = tau1_bet, tau1_skin = tau1_skin
 ))
+
+# Plot estimates and confidence intervals
+type = c('PY', 'DP', 'B', 'S')
+estimates = c(tau1_PY, tau1_DP, tau1_bet, tau1_skin)
+df <- data.frame(type = factor(type, levels = type[order(estimates)]), estim = estimates,
+                 lower_CI = c(PY_lower, DP_lower, NA, NA), upper_CI = c(PY_upper, DP_upper, NA, NA))
+
+p <- ggplot(df, aes(type, estim, color=type))
+p + geom_pointrange(aes(ymin = lower_CI, ymax = upper_CI)) + 
+  theme(legend.position = "none") + xlab('') + ylab('estimate') + ggtitle(paste0('Geometric ', prob)) +
+  theme(plot.title = element_text(hjust = 0.5)) + geom_hline(yintercept=dataset$true_tau1)
 
 # -------------------------------------------
 # Scenario 3 - Custom probabilities
@@ -237,6 +275,11 @@ tau1_DP <- tau1_dp(dataset$m1, dataset$n, out_DP$par[1], dataset$N)
 DP_lower <- qhyper(0.01 / 2, out_DP$par[1] + dataset$n - 1, dataset$N - dataset$n, dataset$m1)
 DP_upper <- qhyper(1 - 0.01 / 2, out_DP$par[1] + dataset$n - 1, dataset$N - dataset$n, dataset$m1)
 
+# Bethlehem and Skinner estimators
+estim <- tau1_bs(dataset$frequencies, dataset$N)
+tau1_bet <- estim[1]
+tau1_skin <- estim[2]
+
 # Summary
 kable(data.frame(
   n = dataset$n, N = dataset$N, percentage = round(dataset$percentage, 2),
@@ -244,5 +287,18 @@ kable(data.frame(
   K_n = dataset$K_n,
   true_tau1 = dataset$true_tau1,
   tau1_py = tau1_PY, CI_PY = paste("[", PY_lower, ", ", PY_upper, "]", sep = ""),
-  tau1_dp = tau1_DP, CI_DP = paste("[", DP_lower, ", ", DP_upper, "]", sep = "")
+  tau1_dp = tau1_DP, CI_DP = paste("[", DP_lower, ", ", DP_upper, "]", sep = ""),
+  tau1_bet = tau1_bet, tau1_skin = tau1_skin
 ))
+
+# Plot estimates and confidence intervals
+type = c('PY', 'DP', 'B', 'S')
+estimates = c(tau1_PY, tau1_DP, tau1_bet, tau1_skin)
+df <- data.frame(type = factor(type, levels = type[order(estimates)]), estim = estimates,
+                 lower_CI = c(PY_lower, DP_lower, NA, NA), upper_CI = c(PY_upper, DP_upper, NA, NA))
+
+p <- ggplot(df, aes(type, estim, color=type))
+p + geom_pointrange(aes(ymin = lower_CI, ymax = upper_CI)) + geom_hline(yintercept = dataset$true_tau1)
+  theme(legend.position = "none") + xlab('') + ylab('estimate') + ggtitle(paste0('Custom probabilities')) +
+  theme(plot.title = element_text(hjust = 0.5))
+

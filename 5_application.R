@@ -54,6 +54,11 @@ tau1_DP <- tau1_dp(dataset$m1, dataset$n, out_DP$par[1], dataset$N)
 DP_lower <- qhyper(alpha / 2, out_DP$par[1] + dataset$n - 1, dataset$N - dataset$n, dataset$m1)
 DP_upper <- qhyper(1 - alpha / 2, out_DP$par[1] + dataset$n - 1, dataset$N - dataset$n, dataset$m1)
 
+# Bethlehem and Skinner estimators
+estim <- tau1_bs(dataset$frequencies, dataset$N)
+tau1_bet <- estim[1]
+tau1_skin <- estim[2]
+
 # Summary
 kable(data.frame(
   n = dataset$n, N = dataset$N, percentage = round(dataset$percentage, 2),
@@ -61,7 +66,8 @@ kable(data.frame(
   K_n = dataset$K_n,
   true_tau1 = dataset$true_tau1,
   tau1_py = tau1_PY, CI_PY = paste("[", PY_lower, ", ", PY_upper, "]", sep = ""),
-  tau1_dp = tau1_DP, CI_DP = paste("[", DP_lower, ", ", DP_upper, "]", sep = "")
+  tau1_dp = tau1_DP, CI_DP = paste("[", DP_lower, ", ", DP_upper, "]", sep = ""),
+  tau1_bet = tau1_bet, tau1_skin = tau1_skin
 ))
 
 # -------------------------------

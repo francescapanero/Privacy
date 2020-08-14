@@ -1,6 +1,7 @@
 # library(plyr)
 library(ggplot2)
 library(knitr)
+library(EnvStats)
 
 Rcpp::sourceCpp("3_cluster_py.cpp")
 
@@ -133,3 +134,57 @@ frequency_check_PY <- function(frequencies) {
     ylab(expression(M[l]))
   p
 }
+
+
+tau1_bs <- function(freq, N){
+  
+  k = length(freq)
+  n = sum(freq)
+  bar_f = n/k
+  K_N = N/bar_f # estimate number of categories in population
+  alpha = mle_negbin(freq) # number of successes neg bin
+  beta = 1 / (K_N*alpha) # probability neg bin
+  tau_1_skin = k * ((1+n*beta)/(1+N*beta))^(1+alpha)
+  tau_1_bet = n * (1+beta*N)^(-alpha-1)
+  return(c(tau_1_bet, tau_1_skin))
+  
+}
+
+
+mle_negbin <- function(x){
+  
+  tol = 0.001
+  iter = 10^5
+  a = 0.001
+  b = 20
+  
+  k = length(x) # number of classes
+  n = sum(x)
+  fa = sum(psigamma(x+a)) - k*psigamma(a) + k*log(1-n/(n+k*a))
+  fb = sum(psigamma(x+b)) - k*psigamma(b) + k*log(1-n/(n+k*b))
+  
+  while(fa*fb >0){
+    b = b+100
+    fb = sum(psigamma(x+b)) - k*psigamma(b) + k*log(1-n/(n+k*b))
+  }
+  i = 1
+  while(i<=iter & abs(a-b)>tol){
+    c = (a+b)/2
+    fc = sum(psigamma(x+c)) - k*psigamma(c) + k*log(1-n/(n+k*c))
+    if(fc*fb<0){
+      a = c
+      fa = fc
+    }
+    else{
+      b = c
+      fb = fc
+    }
+    i = i+1
+  }
+  if(abs(a-b)>tol)
+    print('Tolleranza non raggiunta')
+  return(c)
+}
+
+
+
