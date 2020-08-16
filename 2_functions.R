@@ -2,6 +2,7 @@
 library(ggplot2)
 library(knitr)
 library(EnvStats)
+library(MASS)
 
 Rcpp::sourceCpp("3_cluster_py.cpp")
 
@@ -143,6 +144,8 @@ tau1_bs <- function(freq, N){
   bar_f = n/k
   K_N = N/bar_f # estimate number of categories in population
   alpha = mle_negbin(freq) # number of successes neg bin
+  # out <- fitdistr(freq, "negative binomial")
+  # alpha <- out$estimate[1]
   beta = 1 / (K_N*alpha) # probability neg bin
   tau_1_skin = k * ((1+n*beta)/(1+N*beta))^(1+alpha)
   tau_1_bet = n * (1+beta*N)^(-alpha-1)

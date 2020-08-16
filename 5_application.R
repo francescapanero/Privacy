@@ -70,6 +70,50 @@ kable(data.frame(
   tau1_bet = tau1_bet, tau1_skin = tau1_skin
 ))
 
+
+# Summary rounded
+result <- data.frame(
+  N = dataset$N, 
+  percentage = round(dataset$percentage*100, 2),
+  m1 = dataset$m1,
+  K_n = dataset$K_n,
+  true_tau1 = dataset$true_tau1,
+  tau1_py = round(tau1_PY,0), CI_PY = paste("[", round(PY_lower,0), ", ", round(PY_upper,0), "]", sep = ""),
+  tau1_dp = round(tau1_DP,0), CI_DP = paste("[", round(DP_lower,0), ", ", round(DP_upper,0), "]", sep = ""),
+  tau1_bet = round(tau1_bet,0), tau1_skin = round(tau1_skin,0))
+
+# change col names
+result %>%
+  kable(., col.names = c('N','% sample', '# classes', '# sample uniques', 'tau_1 true', 'PY', 'CI PY', 'DP', 'CI DP','Bethelehem', 'Skinner'))
+
+# Latex table
+result %>%
+  kable(., "latex", escape = F, booktabs = T, linesep = "", align = "c", 
+        col.names = c('N','$\\%$ sample', '$\\#$ classes', '# sample uniques', '$\\tau_1$ true', 'PY', 'CI PY', 'DP', 'CI DP','Bethelehem', 'Skinner'))
+
+# Plot estimates and confidence intervals
+type = c('PY', 'DP', 'B', 'S')
+estimates = c(tau1_PY, tau1_DP, tau1_bet, tau1_skin)
+df <- data.frame(type = factor(type, levels = type[order(estimates)]), estim = estimates,
+                 lower_CI = c(PY_lower, DP_lower, NA, NA), upper_CI = c(PY_upper, DP_upper, NA, NA))
+
+p <- ggplot(df, aes(type, estim, color=type))
+p + geom_pointrange(aes(ymin = lower_CI, ymax = upper_CI)) + 
+  theme(legend.position = "none") + xlab('') + ylab('estimate') + ggtitle(paste0('Zipf ', zipf_param)) +
+  theme(plot.title = element_text(hjust = 0.5)) + geom_hline(yintercept=dataset$true_tau1)
+
+# Plot estimates and confidence intervals
+type = c('PY', 'DP', 'B', 'S')
+estimates = c(tau1_PY, tau1_DP, tau1_bet, tau1_skin)
+df <- data.frame(type = factor(type, levels = type[order(estimates)]), estim = estimates,
+                 lower_CI = c(PY_lower, DP_lower, NA, NA), upper_CI = c(PY_upper, DP_upper, NA, NA))
+
+p <- ggplot(df, aes(type, estim, color=type))
+p + geom_pointrange(aes(ymin = lower_CI, ymax = upper_CI)) + 
+  theme(legend.position = "none") + xlab('') + ylab('estimate') + ggtitle(paste('5 % sample')) +
+  theme(plot.title = element_text(hjust = 0.5)) + geom_hline(yintercept=dataset$true_tau1)
+
+
 # -------------------------------
 # 10% dataset
 # -------------------------------
@@ -94,6 +138,7 @@ tab <- rbind(PY = expected_m_py(1:15, dataset$n, out_PY$par[2], out_PY$par[1]),
 
 colnames(tab) <- 1:15
 kable(tab, digits=0)
+frequency_check_PY(dataset$frequencies)
 
 # ---------------------------
 # PY estimation
@@ -114,6 +159,11 @@ tau1_DP <- tau1_dp(dataset$m1, dataset$n, out_DP$par[1], dataset$N)
 DP_lower <- qhyper(alpha / 2, out_DP$par[1] + dataset$n - 1, dataset$N - dataset$n, dataset$m1)
 DP_upper <- qhyper(1 - alpha / 2, out_DP$par[1] + dataset$n - 1, dataset$N - dataset$n, dataset$m1)
 
+# Bethlehem and Skinner estimators
+estim <- tau1_bs(dataset$frequencies, dataset$N)
+tau1_bet <- estim[1]
+tau1_skin <- estim[2]
+
 # Summary
 kable(data.frame(
   n = dataset$n, N = dataset$N, percentage = round(dataset$percentage, 2),
@@ -123,3 +173,34 @@ kable(data.frame(
   tau1_py = tau1_PY, CI_PY = paste("[", PY_lower, ", ", PY_upper, "]", sep = ""),
   tau1_dp = tau1_DP, CI_DP = paste("[", DP_lower, ", ", DP_upper, "]", sep = "")
 ))
+
+# Summary rounded
+result <- data.frame(
+  N = dataset$N, 
+  percentage = round(dataset$percentage*100, 2),
+  m1 = dataset$m1,
+  K_n = dataset$K_n,
+  true_tau1 = dataset$true_tau1,
+  tau1_py = round(tau1_PY,0), CI_PY = paste("[", round(PY_lower,0), ", ", round(PY_upper,0), "]", sep = ""),
+  tau1_dp = round(tau1_DP,0), CI_DP = paste("[", round(DP_lower,0), ", ", round(DP_upper,0), "]", sep = ""),
+  tau1_bet = round(tau1_bet,0), tau1_skin = round(tau1_skin,0))
+
+# change col names
+result %>%
+  kable(., col.names = c('N','% sample', '# classes', '# sample uniques', 'tau_1 true', 'PY', 'CI PY', 'DP', 'CI DP','Bethelehem', 'Skinner'))
+
+# Latex table
+result %>%
+  kable(., "latex", escape = F, booktabs = T, linesep = "", align = "c", 
+        col.names = c('N','$\\%$ sample', '$\\#$ classes', '# sample uniques', '$\\tau_1$ true', 'PY', 'CI PY', 'DP', 'CI DP','Bethelehem', 'Skinner'))
+
+# Plot estimates and confidence intervals
+type = c('PY', 'DP', 'B', 'S')
+estimates = c(tau1_PY, tau1_DP, tau1_bet, tau1_skin)
+df <- data.frame(type = factor(type, levels = type[order(estimates)]), estim = estimates,
+                 lower_CI = c(PY_lower, DP_lower, NA, NA), upper_CI = c(PY_upper, DP_upper, NA, NA))
+
+p <- ggplot(df, aes(type, estim, color=type))
+p + geom_pointrange(aes(ymin = lower_CI, ymax = upper_CI)) + 
+  theme(legend.position = "none") + xlab('') + ylab('estimate') + ggtitle(paste('10 % sample')) +
+  theme(plot.title = element_text(hjust = 0.5)) + geom_hline(yintercept=dataset$true_tau1)

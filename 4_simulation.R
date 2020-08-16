@@ -143,6 +143,17 @@ kable(data.frame(
   tau1_bet = tau1_bet, tau1_skin = tau1_skin
 ))
 
+# Summary rounded
+kable(data.frame(
+  N = dataset$N, percentage = round(dataset$percentage, 2),
+  m1 = dataset$m1,
+  "# classes" = dataset$K_n,
+  "true tau1" = dataset$true_tau1,
+  "PY" = round(tau1_PY,0), "CI PY" = paste("[", round(PY_lower,0), ", ", round(PY_upper,0), "]", sep = ""),
+  "DP" = round(tau1_DP,0), "CI DP" = paste("[", round(DP_lower,0), ", ", round(DP_upper,0), "]", sep = ""),
+  "Bethlehem" = round(tau1_bet,0), "Skinner" = round(tau1_skin,0)
+))
+
 # Plot estimates and confidence intervals
 type = c('PY', 'DP', 'B', 'S')
 estimates = c(tau1_PY, tau1_DP, tau1_bet, tau1_skin)
