@@ -1,6 +1,7 @@
 rm(list = ls())
 
 source("2_functions.R")
+library(gridExtra)
 library(knitr)
 library(ggplot2)
 library(reticulate) # Library that interface R to python
@@ -86,8 +87,8 @@ N <- 1000000L # Important to us L, otherwise is not recognized as integer
 n <- 100000L
 
 # List of potential parameters
-zipf_param_list <- c(1.0526, 1.1765, 1.3333, 1.5385, 1.8182, 2.2222, 2.8571, 4, 6.6667, 20)
-zipf_param <- zipf_param_list[4]
+zipf_param_list <- c(1.0526, 1.1765, 1.3333, 1.5385, 1.8182, 2.2222, 2.8571, 4)
+zipf_param <- zipf_param_list[1]
 
 set.seed(123)
 dataset <- dataset_creation_zipf(n = n, zipf_param = zipf_param,  N = N)
@@ -165,6 +166,61 @@ p + geom_pointrange(aes(ymin = lower_CI, ymax = upper_CI)) +
   theme(legend.position = "none") + xlab('') + ylab('estimate') + ggtitle(paste0('Zipf ', zipf_param)) +
   theme(plot.title = element_text(hjust = 0.5)) + geom_hline(yintercept=dataset$true_tau1)
 
+
+# plot together
+N <- 1000000L # Important to us L, otherwise is not recognized as integer
+n <- 100000L
+p <- list()
+check <- list()
+zipf_param_list <- c(1.0526, 1.1765, 1.3333, 1.5385, 1.8182, 2.2222, 2.8571, 4)
+for(i in 1:length(zipf_param_list)){
+  zipf_param <- zipf_param_list[i]
+  set.seed(123)
+  dataset <- dataset_creation_zipf(n = n, zipf_param = zipf_param,  N = N)
+  
+  # Comparison between M_l and the expected values
+  M_l <- as.numeric(table(factor(dataset$frequencies, levels = 1:dataset$n)))
+  
+  # PY comparison
+  tab <- rbind(PY = expected_m_py(1:15, dataset$n, out_PY$par[2], out_PY$par[1]),
+               Data = M_l[1:15])
+  colnames(tab) <- 1:15
+  kable(tab, digits=0)
+  check[[i]] <- frequency_check_PY(dataset$frequencies)
+  
+  # PY estimation
+  out_PY <- max_EPPF_PY(dataset$frequencies)
+  tau1_PY <- tau1_py(dataset$m1, dataset$n, out_PY$par[1], out_PY$par[2], dataset$N)
+  PY_sim <- tau1_py_sim(dataset$frequencies, out_PY$par[1], out_PY$par[2], dataset$N)
+  PY_lower <- quantile(PY_sim, 0.01 / 2)
+  PY_upper <- quantile(PY_sim, 1 - 0.01 / 2)
+  
+  # Dirichlet process estimation
+  out_DP <- max_EPPF_DP(dataset$frequencies)
+  tau1_DP <- tau1_dp(dataset$m1, dataset$n, out_DP$par[1], dataset$N)
+  DP_lower <- qhyper(0.01 / 2, out_DP$par[1] + dataset$n - 1, dataset$N - dataset$n, dataset$m1)
+  DP_upper <- qhyper(1 - 0.01 / 2, out_DP$par[1] + dataset$n - 1, dataset$N - dataset$n, dataset$m1)
+  
+  # Bethlehem and Skinner estimators
+  estim <- tau1_bs(dataset$frequencies, dataset$N)
+  tau1_bet <- estim[1]
+  tau1_skin <- estim[2]
+  
+  # Plot estimates and confidence intervals
+  type = c('PY', 'DP', 'B', 'S')
+  estimates = c(tau1_PY, tau1_DP, tau1_bet, tau1_skin)
+  df <- data.frame(type = factor(type), estim = estimates,
+                   lower_CI = c(PY_lower, DP_lower, NA, NA), upper_CI = c(PY_upper, DP_upper, NA, NA))
+  p[[i]] <- ggplot(df, aes(type, estim, color=type))
+  p[[i]] <- p[[i]] + geom_pointrange(aes(ymin = lower_CI, ymax = upper_CI)) + 
+    theme(legend.position = "none") + xlab('') + ylab('tau_1') + ggtitle(paste0('Zipf p=', round(zipf_param,2))) +
+    theme(plot.title = element_text(hjust = 0.5)) + geom_hline(yintercept=dataset$true_tau1)
+  
+}
+
+do.call(grid.arrange, c(p, ncol=4))
+do.call(grid.arrange, c(check, ncol=4))
+
 # -------------------------------------------
 # Scenario 2 - Geometric distribution
 # -------------------------------------------
@@ -173,7 +229,7 @@ N <- 1000000L # Important to us L, otherwise is not recognized as integer
 n <- 100000L
 
 set.seed(123)
-prob = 0.005
+prob = 0.0005
 dataset <- dataset_creation_geom(n = n, N = N, p = prob)
 
 out_PY <- max_EPPF_PY(dataset$frequencies)
@@ -235,6 +291,62 @@ p <- ggplot(df, aes(type, estim, color=type))
 p + geom_pointrange(aes(ymin = lower_CI, ymax = upper_CI)) + 
   theme(legend.position = "none") + xlab('') + ylab('estimate') + ggtitle(paste0('Geometric ', prob)) +
   theme(plot.title = element_text(hjust = 0.5)) + geom_hline(yintercept=dataset$true_tau1)
+
+
+# plot together
+N <- 1000000L # Important to us L, otherwise is not recognized as integer
+n <- 100000L
+check <- list()
+p <- list()
+geom_param_list <- c(0.0001, 0.001, 0.005, 0.05)
+for(i in 1:length(geom_param_list)){
+  geom_param <- geom_param_list[i]
+  set.seed(123)
+  dataset <- dataset_creation_geom(n = n, N = N, p = geom_param)
+  
+  # Comparison between M_l and the expected values
+  M_l <- as.numeric(table(factor(dataset$frequencies, levels = 1:dataset$n)))
+  
+  # PY comparison
+  tab <- rbind(PY = expected_m_py(1:15, dataset$n, out_PY$par[2], out_PY$par[1]),
+               Data = M_l[1:15])
+  colnames(tab) <- 1:15
+  kable(tab, digits=0)
+  check[[i]] <- frequency_check_PY(dataset$frequencies)
+  
+  # PY estimation
+  out_PY <- max_EPPF_PY(dataset$frequencies)
+  tau1_PY <- tau1_py(dataset$m1, dataset$n, out_PY$par[1], out_PY$par[2], dataset$N)
+  PY_sim <- tau1_py_sim(dataset$frequencies, out_PY$par[1], out_PY$par[2], dataset$N)
+  PY_lower <- quantile(PY_sim, 0.01 / 2)
+  PY_upper <- quantile(PY_sim, 1 - 0.01 / 2)
+  
+  # Dirichlet process estimation
+  out_DP <- max_EPPF_DP(dataset$frequencies)
+  tau1_DP <- tau1_dp(dataset$m1, dataset$n, out_DP$par[1], dataset$N)
+  DP_lower <- qhyper(0.01 / 2, out_DP$par[1] + dataset$n - 1, dataset$N - dataset$n, dataset$m1)
+  DP_upper <- qhyper(1 - 0.01 / 2, out_DP$par[1] + dataset$n - 1, dataset$N - dataset$n, dataset$m1)
+  
+  # Bethlehem and Skinner estimators
+  estim <- tau1_bs(dataset$frequencies, dataset$N)
+  tau1_bet <- estim[1]
+  tau1_skin <- estim[2]
+  
+  # Plot estimates and confidence intervals
+  type = c('PY', 'DP', 'B', 'S')
+  estimates = c(tau1_PY, tau1_DP, tau1_bet, tau1_skin)
+  df <- data.frame(type = factor(type), estim = estimates,
+                   lower_CI = c(PY_lower, DP_lower, NA, NA), upper_CI = c(PY_upper, DP_upper, NA, NA))
+  
+  p[[i]] <- ggplot(df, aes(type, estim, color=type))
+  p[[i]] <- p[[i]] + geom_pointrange(aes(ymin = lower_CI, ymax = upper_CI)) + 
+    theme(legend.position = "none") + xlab('') + ylab('tau_1') + ggtitle(paste0('Geom p=', geom_param)) +
+    theme(plot.title = element_text(hjust = 0.5)) + geom_hline(yintercept=dataset$true_tau1)
+  
+}
+
+do.call(grid.arrange, c(p, ncol=2))
+do.call(grid.arrange, c(check, ncol=2))
 
 # -------------------------------------------
 # Scenario 3 - Custom probabilities
@@ -309,7 +421,8 @@ df <- data.frame(type = factor(type, levels = type[order(estimates)]), estim = e
                  lower_CI = c(PY_lower, DP_lower, NA, NA), upper_CI = c(PY_upper, DP_upper, NA, NA))
 
 p <- ggplot(df, aes(type, estim, color=type))
-p + geom_pointrange(aes(ymin = lower_CI, ymax = upper_CI)) + geom_hline(yintercept = dataset$true_tau1)
-  theme(legend.position = "none") + xlab('') + ylab('estimate') + ggtitle(paste0('Custom probabilities')) +
-  theme(plot.title = element_text(hjust = 0.5))
+p + geom_pointrange(aes(ymin = lower_CI, ymax = upper_CI)) + 
+  theme(legend.position = "none") + xlab('') + ylab('estimate') +
+  theme(plot.title = element_text(hjust = 0.5)) + geom_hline(yintercept=dataset$true_tau1) +
+  ggtitle('Custom probabilities')
 
