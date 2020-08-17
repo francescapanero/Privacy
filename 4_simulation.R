@@ -167,8 +167,7 @@ df <- data.frame(
 
 p <- ggplot(df, aes(type, estim, color = type))
 p + geom_pointrange(aes(ymin = lower_CI, ymax = upper_CI)) +
-  theme(legend.position = "none") + xlab("") + ylab("estimate") + ggtitle(paste0("Zipf ", zipf_param)) +
-  theme(plot.title = element_text(hjust = 0.5)) + geom_hline(yintercept = dataset$true_tau1)
+  theme(legend.position = "none") + xlab("") + ylab("estimate") + ggtitle(paste0("Zipf ", zipf_param)) + theme_bw() + theme(plot.title = element_text(hjust = 0.5)) + geom_hline(yintercept = dataset$true_tau1) + scale_y_log10()
 
 
 # plot together
@@ -217,12 +216,12 @@ for (i in 1:length(zipf_param_list)) {
   estimates <- c(tau1_PY, tau1_DP, tau1_bet, tau1_skin)
   df <- data.frame(
     type = factor(type), estim = estimates,
-    lower_CI = c(PY_lower, DP_lower, NA, NA), upper_CI = c(PY_upper, DP_upper, NA, NA)
+    lower_CI = c(PY_lower, DP_lower, NA, NA), 
+    upper_CI = c(PY_upper, DP_upper, NA, NA)
   )
   p[[i]] <- ggplot(df, aes(type, estim, color = type))
-  p[[i]] <- p[[i]] + geom_pointrange(aes(ymin = lower_CI, ymax = upper_CI)) +
-    theme(legend.position = "none") + xlab("") + ylab("tau_1") + ggtitle(paste0("Zipf p=", round(zipf_param, 2))) +
-    theme(plot.title = element_text(hjust = 0.5)) + geom_hline(yintercept = dataset$true_tau1)
+  p[[i]] <- p[[i]] + geom_pointrange(aes(ymin = lower_CI, ymax = upper_CI)) +  theme_bw() +
+    theme(legend.position = "none") + xlab("") + ylab(expression(tau[1])) + ggtitle(paste0("Zipf parameter: ", round(zipf_param, 2)))  + theme(plot.title = element_text(hjust = 0.5)) + geom_hline(yintercept = dataset$true_tau1, linetype="dotted")
 }
 
 do.call(grid.arrange, c(p, ncol = 4))
@@ -232,7 +231,7 @@ do.call(grid.arrange, c(check, ncol = 4))
 # Scenario 2 - Geometric distribution
 # -------------------------------------------
 
-N <- 1000000L # Important to us L, otherwise is not recognized as integer
+N <- 1000000L #  L is important, otherwise is not recognized as integer
 n <- 100000L
 
 set.seed(123)
@@ -299,10 +298,8 @@ df <- data.frame(
 )
 
 p <- ggplot(df, aes(type, estim, color = type))
-p + geom_pointrange(aes(ymin = lower_CI, ymax = upper_CI)) +
-  theme(legend.position = "none") + xlab("") + ylab("estimate") + ggtitle(paste0("Geometric ", prob)) +
-  theme(plot.title = element_text(hjust = 0.5)) + geom_hline(yintercept = dataset$true_tau1)
-
+p +  geom_pointrange(aes(ymin = lower_CI, ymax = upper_CI)) +  theme_bw() +
+  theme(legend.position = "none") + xlab("") + ylab(expression(tau[1])) + ggtitle(paste0("Geometric parameter: ", round(prob, 6)))  + theme(plot.title = element_text(hjust = 0.5)) + geom_hline(yintercept = dataset$true_tau1, linetype="dotted")
 
 # plot together
 N <- 1000000L # Important to us L, otherwise is not recognized as integer
@@ -354,11 +351,8 @@ for (i in 1:length(geom_param_list)) {
   )
 
   p[[i]] <- ggplot(df, aes(type, estim, color = type))
-  p[[i]] <- p[[i]] + geom_pointrange(aes(ymin = lower_CI, ymax = upper_CI)) +
-    theme(legend.position = "none") + xlab("") + ylab("tau_1") + ggtitle(paste0("Geom p=", geom_param)) +
-    theme(plot.title = element_text(hjust = 0.5)) + geom_hline(yintercept = dataset$true_tau1)
+  p[[i]] <- p[[i]] + geom_pointrange(aes(ymin = lower_CI, ymax = upper_CI)) +  theme_bw() + theme(legend.position = "none") + xlab("") + ylab(expression(tau[1])) + ggtitle(paste0("Geometric parameter: ", round(geom_param, 6)))  + theme(plot.title = element_text(hjust = 0.5)) + geom_hline(yintercept = dataset$true_tau1, linetype="dotted")
 }
-
 do.call(grid.arrange, c(p, ncol = 2))
 do.call(grid.arrange, c(check, ncol = 2))
 
@@ -440,7 +434,5 @@ df <- data.frame(
 )
 
 p <- ggplot(df, aes(type, estim, color = type))
-p + geom_pointrange(aes(ymin = lower_CI, ymax = upper_CI)) +
-  theme(legend.position = "none") + xlab("") + ylab("estimate") +
-  theme(plot.title = element_text(hjust = 0.5)) + geom_hline(yintercept = dataset$true_tau1) +
-  ggtitle("Custom probabilities")
+p +  geom_pointrange(aes(ymin = lower_CI, ymax = upper_CI)) +  theme_bw() +
+  theme(legend.position = "none") + xlab("") + ylab(expression(tau[1])) + ggtitle("Custom probabilities")  + theme(plot.title = element_text(hjust = 0.5)) + geom_hline(yintercept = dataset$true_tau1, linetype="dotted")
