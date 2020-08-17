@@ -21,7 +21,7 @@ dataset <- data_full %>%
   group_by(REGION, RACED, OCC) %>%
   count()
 
-length(unique(dataset$REGION))*length(unique(dataset$RACED))*length(unique(dataset$OCC))
+length(unique(dataset$REGION)) * length(unique(dataset$RACED)) * length(unique(dataset$OCC))
 
 freq_full <- dataset$n
 points_full <- factor(rep(1:length(freq_full), freq_full)) # it is important they are factor

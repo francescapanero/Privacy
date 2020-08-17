@@ -6,12 +6,10 @@ library(MASS)
 
 Rcpp::sourceCpp("3_cluster_py.cpp")
 
-
 logEPPF_PY <- function(theta, alpha, frequencies) {
-  if (any(alpha < 0, theta <= - alpha + 1e-04)) {
+  if (any(alpha < 0, theta <= -alpha + 1e-04)) {
     return(-Inf)
   }
-
 
   # Sample size
   n <- sum(frequencies)
@@ -120,11 +118,11 @@ frequency_check_PY <- function(frequencies) {
 
 
   M_l <- as.numeric(table(factor(frequencies, levels = 1:n)))
-  #P_l <- M_l / sum(M_l)
+  # P_l <- M_l / sum(M_l)
 
-  idx <- 1:(which.min(M_l) -1)# which(P_l > 0)
+  idx <- 1:(which.min(M_l) - 1) # which(P_l > 0)
 
-  data_plot <- data.frame(Size = idx, M_l = M_l[idx], Theoretical = expected_m_py(idx, n = n, alpha = alpha, theta=theta))
+  data_plot <- data.frame(Size = idx, M_l = M_l[idx], Theoretical = expected_m_py(idx, n = n, alpha = alpha, theta = theta))
   p <- ggplot(data = data_plot, aes(x = Size, y = M_l)) +
     geom_point() +
     geom_line(aes(y = Theoretical), color = "blue", linetype = "dashed") +
@@ -137,57 +135,53 @@ frequency_check_PY <- function(frequencies) {
 }
 
 
-tau1_bs <- function(freq, N){
-  
-  k = length(freq)
-  n = sum(freq)
-  bar_f = n/k
-  K_N = N/bar_f # estimate number of categories in population
-  alpha = mle_negbin(freq) # number of successes neg bin
+tau1_bs <- function(freq, N) {
+  k <- length(freq)
+  n <- sum(freq)
+  bar_f <- n / k
+  K_N <- N / bar_f # estimate number of categories in population
+  alpha <- mle_negbin(freq) # number of successes neg bin
+
   # out <- fitdistr(freq, "negative binomial")
   # alpha <- out$estimate[1]
-  beta = 1 / (K_N*alpha) # probability neg bin
-  tau_1_skin = k * ((1+n*beta)/(1+N*beta))^(1+alpha)
-  tau_1_bet = n * (1+beta*N)^(-alpha-1)
+  beta <- 1 / (K_N * alpha) # probability neg bin
+  tau_1_skin <- k * ((1 + n * beta) / (1 + N * beta))^(1 + alpha)
+  tau_1_bet <- n * (1 + beta * N)^(-alpha - 1)
   return(c(tau_1_bet, tau_1_skin))
-  
 }
 
 
-mle_negbin <- function(x){
-  
-  tol = 0.001
-  iter = 10^5
-  a = 0.001
-  b = 20
-  
-  k = length(x) # number of classes
-  n = sum(x)
-  fa = sum(psigamma(x+a)) - k*psigamma(a) + k*log(1-n/(n+k*a))
-  fb = sum(psigamma(x+b)) - k*psigamma(b) + k*log(1-n/(n+k*b))
-  
-  while(fa*fb >0){
-    b = b+100
-    fb = sum(psigamma(x+b)) - k*psigamma(b) + k*log(1-n/(n+k*b))
+mle_negbin <- function(x) {
+  tol <- 0.001
+  iter <- 10^5
+  a <- 0.001
+  b <- 20
+
+  k <- length(x) # number of classes
+  n <- sum(x)
+  fa <- sum(psigamma(x + a)) - k * psigamma(a) + k * log(1 - n / (n + k * a))
+  fb <- sum(psigamma(x + b)) - k * psigamma(b) + k * log(1 - n / (n + k * b))
+
+  while (fa * fb > 0) {
+    b <- b + 100
+    fb <- sum(psigamma(x + b)) - k * psigamma(b) + k * log(1 - n / (n + k * b))
   }
-  i = 1
-  while(i<=iter & abs(a-b)>tol){
-    c = (a+b)/2
-    fc = sum(psigamma(x+c)) - k*psigamma(c) + k*log(1-n/(n+k*c))
-    if(fc*fb<0){
-      a = c
-      fa = fc
+  i <- 1
+  while (i <= iter & abs(a - b) > tol) {
+    c <- (a + b) / 2
+    fc <- sum(psigamma(x + c)) - k * psigamma(c) + k * log(1 - n / (n + k * c))
+    if (fc * fb < 0) {
+      a <- c
+      fa <- fc
     }
-    else{
-      b = c
-      fb = fc
+    else {
+      b <- c
+      fb <- fc
     }
-    i = i+1
+    i <- i + 1
   }
-  if(abs(a-b)>tol)
-    print('Tolleranza non raggiunta')
+  if (abs(a - b) > tol) {
+    print("Convergence failed")
+  }
   return(c)
 }
-
-
-
