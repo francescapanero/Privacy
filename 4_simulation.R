@@ -436,3 +436,4 @@ df <- data.frame(
 p <- ggplot(df, aes(type, estim, color = type))
 p +  geom_pointrange(aes(ymin = lower_CI, ymax = upper_CI)) +  theme_bw() +
   theme(legend.position = "none") + xlab("") + ylab(expression(tau[1])) + ggtitle("Custom probabilities")  + theme(plot.title = element_text(hjust = 0.5)) + geom_hline(yintercept = dataset$true_tau1, linetype="dotted")
+
