@@ -6,6 +6,16 @@ library(MASS)
 
 Rcpp::sourceCpp("3_cluster_py.cpp")
 
+
+# Alternative implementation of ryper, but we allow m to be a real number
+rhyper2 <- function(nn, m, n, k){
+  x <- 0:k
+  lprobs <- lchoose(m, x) + lchoose(n, k - x) - lchoose(m + n, k) #choose(m, x) choose(n, k-x) / choose(m+n, k)
+  lprobs <- lprobs - max(lprobs)
+  probs <- exp(lprobs)
+  sample(x, nn, replace=TRUE, prob=probs)
+}
+
 logEPPF_PY <- function(theta, alpha, frequencies) {
   if (any(alpha < 0, theta <= -alpha + 1e-04)) {
     return(-Inf)
@@ -87,7 +97,7 @@ tau1_py_sim <- function(frequencies, theta, alpha, N, R = 100, verbose = TRUE) {
   K_sim <- plyr::aaply(matrix(0, R, 2), 1, function(x) cluster_py_C(N - n, 1 - alpha, theta + n), .progress = "text")
   # K_sim <- replicate(R,cluster_py_C(N - n, 1 - alpha, theta+n))
 
-  sim <- rhyper(R, (theta + n) / (1 - alpha) - 1, K_sim, m1)
+  sim <- rhyper2(R, (theta + n) / (1 - alpha) - 1, K_sim, m1)
   sim
 
   cat("Estimated mean: ", round(mean(sim), 2), ". Monte Carlo se: ", round(sd(sim) / sqrt(R), 2), ".\n", sep = "")
