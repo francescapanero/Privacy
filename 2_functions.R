@@ -44,6 +44,16 @@ max_EPPF_PY <- function(frequencies) {
   return(out)
 }
 
+max_EPPF_PY_theta <- function(frequencies, alpha) {
+  start <- 1 # Initialization of the maximization algorithm
+  out <- nlminb(
+    start = start,
+    function(theta) -logEPPF_PY(theta, alpha = alpha, frequencies = frequencies),
+    lower = -Inf, upper = Inf
+  )
+  return(out)
+}
+
 
 max_EPPF_DP <- function(frequencies) {
   start <- 1 # Initialization of the maximization algorithm
@@ -184,4 +194,31 @@ mle_negbin <- function(x) {
     print("Convergence failed")
   }
   return(c)
+}
+
+tau1_np_pois <- function(N, n, freq){
+  lambda = N - n / n
+  m <- rep(0, n)
+  a = data.frame(freq) %>% group_by(freq) %>% summarise(count=n())
+  for(j in 1:n){
+    if(j %in% a$freq) m[j] = a$count[match(j ,a$freq)]
+  }
+  ind_max = tail(which(m!=0), 1)
+  pois_par <- log(n/(2*lambda-1))/(4*lambda)
+}
+
+f_i <- function(alpha, i, cumsum){
+  return(alpha / (i-alpha) * rev(cumsum_m)[i+1])
+}
+
+f_alpha <- function(alpha, ind_max, cumsum_m, K_n){
+  ind = c(1:(ind_max-1))
+  a = sapply(ind, f_i, alpha=alpha, cumsum=cumsum_m)
+  a = sum(a)- K_n
+  return(a)
+}
+
+PY_alpha <- function(freq, ind_max, cumsum_m, K_n){
+  a = uniroot(f_alpha, c(0,1), ind_max=ind_max, cumsum_m=cumsum_m, K_n=K_n)
+  return(a$root)
 }

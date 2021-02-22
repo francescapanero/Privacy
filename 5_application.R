@@ -1,4 +1,3 @@
-# setwd("~/Documents/Privacy_git/Privacy")
 
 library(tidyverse)
 library(dplyr)
@@ -104,24 +103,13 @@ df <- data.frame(
   lower_CI = c(PY_lower, DP_lower, NA, NA), upper_CI = c(PY_upper, DP_upper, NA, NA)
 )
 
-p <- ggplot(df, aes(type, estim, color = type))
-p + geom_pointrange(aes(ymin = lower_CI, ymax = upper_CI)) +
-  theme(legend.position = "none") + xlab("") + ylab("estimate") + ggtitle(paste0("Zipf ", zipf_param)) +
-  theme(plot.title = element_text(hjust = 0.5)) + geom_hline(yintercept = dataset$true_tau1)
-
-# Plot estimates and confidence intervals
-type <- c("PY", "DP", "B", "S")
-estimates <- c(tau1_PY, tau1_DP, tau1_bet, tau1_skin)
-df <- data.frame(
-  type = factor(type, levels = type[order(estimates)]), estim = estimates,
-  lower_CI = c(PY_lower, DP_lower, NA, NA), upper_CI = c(PY_upper, DP_upper, NA, NA)
-)
-
-p <- ggplot(df, aes(type, estim, color = type))
-p + geom_pointrange(aes(ymin = lower_CI, ymax = upper_CI)) +
+p <- ggplot(df, aes(type, estim)) + scale_x_discrete(limits=c('B', 'DP', 'PY', 'S'))
+p <- p + geom_pointrange(aes(ymin = lower_CI, ymax = upper_CI), size=1.2) + theme_bw(base_size = 18) +
   theme(legend.position = "none") + xlab("") + ylab("estimate") + ggtitle(paste("5 % sample")) +
   theme(plot.title = element_text(hjust = 0.5)) + geom_hline(yintercept = dataset$true_tau1)
-
+p <- p + scale_x_discrete(limits=c('B', 'DP', 'PY', 'S'))
+p
+ggsave(p, file='5perc.eps', device='eps')
 
 # -------------------------------
 # 10% dataset
@@ -216,7 +204,13 @@ df <- data.frame(
   lower_CI = c(PY_lower, DP_lower, NA, NA), upper_CI = c(PY_upper, DP_upper, NA, NA)
 )
 
-p <- ggplot(df, aes(type, estim, color = type))
-p + geom_pointrange(aes(ymin = lower_CI, ymax = upper_CI)) +
+p1 <- ggplot(df, aes(type, estim)) + scale_x_discrete(limits=c('B', 'DP', 'PY', 'S'))
+p1 <- p1 + geom_pointrange(aes(ymin = lower_CI, ymax = upper_CI), size=1.2) + theme_bw(base_size = 18) +
   theme(legend.position = "none") + xlab("") + ylab("estimate") + ggtitle(paste("10 % sample")) +
   theme(plot.title = element_text(hjust = 0.5)) + geom_hline(yintercept = dataset$true_tau1)
+p1
+
+library(ggpubr)
+p_together <- ggarrange(p, p1, ncol=2) + scale_fill_grey()
+ggsave(p_together, height=5, width=4*2.5, file="ipmus.png", device="png")
+ggsave(p_together, height=5, width=4*2.5, file="ipmus.eps", device="eps")
