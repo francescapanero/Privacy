@@ -97,7 +97,7 @@ tau1_py_sim <- function(frequencies, theta, alpha, N, R = 100, verbose = TRUE) {
   K_sim <- plyr::aaply(matrix(0, R, 2), 1, function(x) cluster_py_C(N - n, 1 - alpha, theta + n), .progress = "text")
   # K_sim <- replicate(R,cluster_py_C(N - n, 1 - alpha, theta+n))
 
-  sim <- rhyper2(R, (theta + n) / (1 - alpha) - 1, K_sim, m1)
+  sim <- sapply(K_sim, function(x) rhyper2(R, (theta + n) / (1 - alpha) - 1, x, m1))
   sim
 
   cat("Estimated mean: ", round(mean(sim), 2), ". Monte Carlo se: ", round(sd(sim) / sqrt(R), 2), ".\n", sep = "")
