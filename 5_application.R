@@ -104,10 +104,9 @@ df <- data.frame(
 )
 
 p <- ggplot(df, aes(type, estim)) + scale_x_discrete(limits=c('B', 'DP', 'PY', 'S'))
-p <- p + geom_pointrange(aes(ymin = lower_CI, ymax = upper_CI), size=1.2) + theme_bw(base_size = 18) +
-  theme(legend.position = "none") + xlab("") + ylab("estimate") + ggtitle(paste("5 % sample")) +
-  theme(plot.title = element_text(hjust = 0.5)) + geom_hline(yintercept = dataset$true_tau1)
-p <- p + scale_x_discrete(limits=c('B', 'DP', 'PY', 'S'))
+p <- p + geom_pointrange(aes(ymin = lower_CI, ymax = upper_CI)) + theme_bw() +
+  theme(legend.position = "none") + xlab("") + ylab(expression(tau[1])) + ggtitle(paste("5 % sample")) +
+  theme(plot.title = element_text(hjust = 0.5, size=30)) + geom_hline(yintercept = dataset$true_tau1, linetype = "dotted")
 p
 ggsave(p, file='5perc.eps', device='eps')
 
@@ -205,9 +204,9 @@ df <- data.frame(
 )
 
 p1 <- ggplot(df, aes(type, estim)) + scale_x_discrete(limits=c('B', 'DP', 'PY', 'S'))
-p1 <- p1 + geom_pointrange(aes(ymin = lower_CI, ymax = upper_CI), size=1.2) + theme_bw(base_size = 18) +
-  theme(legend.position = "none") + xlab("") + ylab("estimate") + ggtitle(paste("10 % sample")) +
-  theme(plot.title = element_text(hjust = 0.5)) + geom_hline(yintercept = dataset$true_tau1)
+p1 <- p1 + geom_pointrange(aes(ymin = lower_CI, ymax = upper_CI)) + theme_bw() +
+  theme(legend.position = "none") + xlab("") + ylab(expression(tau[1])) + ggtitle(paste("10 % sample")) +
+  theme(plot.title = element_text(hjust = 0.5, size=30)) + geom_hline(yintercept = dataset$true_tau1, linetype = "dotted")
 p1
 
 library(ggpubr)
