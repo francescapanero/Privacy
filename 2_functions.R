@@ -7,7 +7,7 @@ library(MASS)
 Rcpp::sourceCpp("3_cluster_py.cpp")
 
 
-# Alternative implementation of ryper, but we allow m to be a real number
+# Alternative implementation of rhyper, but we allow m to be a real number
 rhyper2 <- function(nn, m, n, k){
   x <- 0:k
   lprobs <- lchoose(m, x) + lchoose(n, k - x) - lchoose(m + n, k) #choose(m, x) choose(n, k-x) / choose(m+n, k)
