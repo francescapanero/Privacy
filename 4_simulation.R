@@ -151,11 +151,11 @@ kable(data.frame(
   m1 = dataset$m1,
   "# classes" = dataset$K_n,
   "true tau1" = dataset$true_tau1,
-  "PY" = round(tau1_PY, 0), 
+  "PY" = round(tau1_PY, 0),
   "CI PY" = paste("[", round(PY_lower, 0), ", ", round(PY_upper, 0), "]", sep = ""),
-  "DP" = round(tau1_DP, 0), 
+  "DP" = round(tau1_DP, 0),
   "CI DP" = paste("[", round(DP_lower, 0), ", ", round(DP_upper, 0), "]", sep = ""),
-  "Bethlehem" = round(tau1_bet, 0), 
+  "Bethlehem" = round(tau1_bet, 0),
   "Skinner" = round(tau1_skin, 0)
 ))
 
@@ -184,7 +184,7 @@ K_n <- c()
 tau1_bet <- c()
 tau1_skin <- c()
 tau1_PY <- c()
-tau1_DP  <- c()
+tau1_DP <- c()
 PY_lower <- c()
 PY_upper <- c()
 DP_lower <- c()
@@ -199,10 +199,10 @@ for (i in 1:length(zipf_param_list)) {
   zipf_param <- zipf_param_list[i]
   set.seed(123)
   dataset[[i]] <- dataset_creation_zipf(n = n, zipf_param = zipf_param, N = N)
-  K_n[i] = dataset[[i]]$K_n
-  true_tau1[i] = dataset[[i]]$true_tau1
+  K_n[i] <- dataset[[i]]$K_n
+  true_tau1[i] <- dataset[[i]]$true_tau1
   m1[i] <- dataset[[i]]$m1
-  
+
   # # Comparison between M_l and the expected values
   # M_l <- as.numeric(table(factor(dataset[[i]]$frequencies, levels = 1:dataset[[i]]$n)))
 
@@ -214,7 +214,7 @@ for (i in 1:length(zipf_param_list)) {
   # colnames(tab) <- 1:15
   # kable(tab, digits = 0)
   # check[[i]] <- frequency_check_PY(dataset[[i]]$frequencies)
-  
+
   # PY estimation
   out_PY[[i]] <- max_EPPF_PY(dataset[[i]]$frequencies)
   tau1_PY[i] <- tau1_py(dataset[[i]]$m1, dataset[[i]]$n, out_PY[[i]]$par[1], out_PY[[i]]$par[2], dataset[[i]]$N)
@@ -232,48 +232,57 @@ for (i in 1:length(zipf_param_list)) {
   estim <- tau1_bs(dataset[[i]]$frequencies, dataset[[i]]$N)
   tau1_bet[i] <- estim[1]
   tau1_skin[i] <- estim[2]
-  
+
   # Plot estimates and confidence intervals
   type <- c("PY", "DP", "B", "S")
   estimates <- c(tau1_PY[i], tau1_DP[i], tau1_bet[i], tau1_skin[i])
   df <- data.frame(
     type = factor(type), estim = estimates,
-    lower_CI = c(PY_lower[i], DP_lower[i], NA, NA), 
+    lower_CI = c(PY_lower[i], DP_lower[i], NA, NA),
     upper_CI = c(PY_upper[i], DP_upper[i], NA, NA)
-    
   )
   p[[i]] <- ggplot(df, aes(type, estim, color = type))
-  p[[i]] <- p[[i]] + geom_pointrange(aes(ymin = lower_CI, ymax = upper_CI)) +  theme_bw() +
-    theme(legend.position = "none") + xlab("") + ylab(expression(tau[1])) + ggtitle(paste0("Zipf parameter: ", round(zipf_param, 2)))  + theme(plot.title = element_text(hjust = 0.5)) + geom_hline(yintercept = dataset$true_tau1, linetype="dotted")
+  p[[i]] <- p[[i]] + geom_pointrange(aes(ymin = lower_CI, ymax = upper_CI)) + theme_bw() +
+    theme(legend.position = "none") + xlab("") + ylab(expression(tau[1])) + ggtitle(paste0("Zipf parameter: ", round(zipf_param, 2))) + theme(plot.title = element_text(hjust = 0.5)) + geom_hline(yintercept = dataset$true_tau1, linetype = "dotted")
 }
 
 # plot estimates
 a <- do.call(grid.arrange, c(p, ncol = 4))
-ggsave(a, file="zipf.eps", device="eps")
+ggsave(a, file = "zipf.eps", device = "eps")
 do.call(grid.arrange, c(check, ncol = 4))
 
 # Summary tables
 theta_MLE_PY <- c()
 alpha_MLE_PY <- c()
 theta_MLE_DP <- c()
-for(i in 1:length(zipf_param_list)){
+for (i in 1:length(zipf_param_list)) {
   theta_MLE_PY[i] <- out_PY[[i]]$par[1]
   alpha_MLE_PY[i] <- out_PY[[i]]$par[2]
   theta_MLE_DP[i] <- out_DP[[i]]$par
 }
-df_zipf <- data.frame(D=round(zipf_param_list,2),
-                 C=m1, E=true_tau1,  G=as.integer(tau1_PY), H=paste("[", round(PY_lower, 0), ", ", round(PY_upper, 0), "]", sep = ""),
-                 I=as.integer(tau1_DP), L=paste("[", round(DP_lower, 0), ", ", round(DP_upper, 0), "]", sep = ""),
-                 M=as.integer(tau1_bet), N=as.integer(tau1_skin))
-colnames(df_zipf) = c("Zipf parameter", "$m_1$", "$\\tau_1$", "$\\tau_1^{PY}$", 
-                      "CI PY", "$\\tau_1^{DP}$", "CI DP", "$\\tau_1^B$", "$\\tau_1^S$")
-knitr::kable(df_zipf,  col.names =c("Zipf parameter", "m_1", "tau_1", "tau_1 PY", 
-                                    "CI PY", "tau_1 DP", "CI DP", "tau_1 B", "tau_1 S"))
+df_zipf <- data.frame(
+  D = round(zipf_param_list, 2),
+  C = m1, E = true_tau1, G = as.integer(tau1_PY), H = paste("[", round(PY_lower, 0), ", ", round(PY_upper, 0), "]", sep = ""),
+  I = as.integer(tau1_DP), L = paste("[", round(DP_lower, 0), ", ", round(DP_upper, 0), "]", sep = ""),
+  M = as.integer(tau1_bet), N = as.integer(tau1_skin)
+)
+colnames(df_zipf) <- c(
+  "Zipf parameter", "$m_1$", "$\\tau_1$", "$\\tau_1^{PY}$",
+  "CI PY", "$\\tau_1^{DP}$", "CI DP", "$\\tau_1^B$", "$\\tau_1^S$"
+)
+knitr::kable(df_zipf, col.names = c(
+  "Zipf parameter", "m_1", "tau_1", "tau_1 PY",
+  "CI PY", "tau_1 DP", "CI DP", "tau_1 B", "tau_1 S"
+))
 
-df_zipf_param <- data.frame(A=round(zipf_param_list,2)[1:4], O=theta_MLE_PY[1:4], P=alpha_MLE_PY[1:4], Q=theta_MLE_DP[1:4],
-                            A=round(zipf_param_list,2)[5:8], O=theta_MLE_PY[5:8], P=alpha_MLE_PY[5:8], Q=theta_MLE_DP[5:8])
-colnames(df_zipf_param) <- c('zipf param', 'theta PY param', 'alpha PY param', 'theta DP param', 
-                             'zipf param', 'theta PY param', 'alpha PY param', 'theta DP param')
+df_zipf_param <- data.frame(
+  A = round(zipf_param_list, 2)[1:4], O = theta_MLE_PY[1:4], P = alpha_MLE_PY[1:4], Q = theta_MLE_DP[1:4],
+  A = round(zipf_param_list, 2)[5:8], O = theta_MLE_PY[5:8], P = alpha_MLE_PY[5:8], Q = theta_MLE_DP[5:8]
+)
+colnames(df_zipf_param) <- c(
+  "zipf param", "theta PY param", "alpha PY param", "theta DP param",
+  "zipf param", "theta PY param", "alpha PY param", "theta DP param"
+)
 
 xtable(df_zipf)
 xtable(df_zipf_param)
@@ -282,7 +291,7 @@ xtable(df_zipf_param)
 # # ----------
 # # Other implementation for minimax estimation, and comparison with MLE
 # # --------
-# 
+#
 # alpha_hat <- c()
 # theta_hat <- c()
 # for(i in 1:length(zipf_param_list)){
@@ -298,7 +307,7 @@ xtable(df_zipf_param)
 #   theta_hat[i] = max_EPPF_PY_theta(dataset[[i]]$frequencies, alpha_hat[i])$par
 #   print(i)
 # }
-# 
+#
 # alpha_MLE <- c()
 # for(i in 1:length(zipf_param_list)) alpha_MLE[i] = out_PY[[i]]$par[2]
 # theta_MLE <- c()
@@ -307,7 +316,7 @@ xtable(df_zipf_param)
 # for(i in 1:length(zipf_param_list)) logEPPF_PY_minimax[i] = logEPPF_PY(theta_hat[i], alpha_hat[i], dataset[[i]]$frequencies)
 # logEPPF_PY_MLE <- c()
 # for(i in 1:length(zipf_param_list)) logEPPF_PY_MLE[i] = logEPPF_PY(theta_MLE[i], alpha_MLE[i], dataset[[i]]$frequencies)
-# df1 <- data.frame(a=alpha_hat, b=alpha_MLE, c=theta_hat, d=theta_MLE, e=logEPPF_PY_minimax, f=logEPPF_PY_MLE) 
+# df1 <- data.frame(a=alpha_hat, b=alpha_MLE, c=theta_hat, d=theta_MLE, e=logEPPF_PY_minimax, f=logEPPF_PY_MLE)
 # knitr::kable(df1, col.names =c("alpha minimax", "alpha MLE", "theta minimax",
 #                                 "theta MLE", "log EPPF minimax", "log EPPF MLE"))
 
@@ -383,8 +392,8 @@ df <- data.frame(
 )
 
 p <- ggplot(df, aes(type, estim, color = type))
-p +  geom_pointrange(aes(ymin = lower_CI, ymax = upper_CI)) +  theme_bw() +
-  theme(legend.position = "none") + xlab("") + ylab(expression(tau[1])) + ggtitle(paste0("Geometric parameter: ", round(prob, 6)))  + theme(plot.title = element_text(hjust = 0.5)) + geom_hline(yintercept = dataset$true_tau1, linetype="dotted")
+p + geom_pointrange(aes(ymin = lower_CI, ymax = upper_CI)) + theme_bw() +
+  theme(legend.position = "none") + xlab("") + ylab(expression(tau[1])) + ggtitle(paste0("Geometric parameter: ", round(prob, 6))) + theme(plot.title = element_text(hjust = 0.5)) + geom_hline(yintercept = dataset$true_tau1, linetype = "dotted")
 
 # plot together
 N <- 1000000L # Important to us L, otherwise is not recognized as integer
@@ -395,7 +404,7 @@ K_n_g <- c()
 tau1_bet_g <- c()
 tau1_skin_g <- c()
 tau1_PY_g <- c()
-tau1_DP_g  <- c()
+tau1_DP_g <- c()
 PY_lower_g <- c()
 PY_upper_g <- c()
 DP_lower_g <- c()
@@ -410,8 +419,8 @@ for (i in 1:length(geom_param_list)) {
   geom_param <- geom_param_list[i]
   set.seed(123)
   dataset_g[[i]] <- dataset_creation_geom(n = n, N = N, p = geom_param)
-  K_n_g[i] = dataset_g[[i]]$K_n
-  true_tau1_g[i] = dataset_g[[i]]$true_tau1
+  K_n_g[i] <- dataset_g[[i]]$K_n
+  true_tau1_g[i] <- dataset_g[[i]]$true_tau1
   m1_g[i] <- dataset_g[[i]]$m1
 
   # Comparison between M_l and the expected values
@@ -453,48 +462,58 @@ for (i in 1:length(geom_param_list)) {
   )
 
   p_g[[i]] <- ggplot(df, aes(type, estim, color = type))
-  p_g[[i]] <- p_g[[i]] + geom_pointrange(aes(ymin = lower_CI, ymax = upper_CI)) + theme_bw() + theme(legend.position = "none") + xlab("") + ylab(expression(tau[1])) + ggtitle(paste0("Geometric parameter: ", round(geom_param, 7)))  + theme(plot.title = element_text(hjust = 0.5)) + geom_hline(yintercept = dataset$true_tau1, linetype="dotted")
+  p_g[[i]] <- p_g[[i]] + geom_pointrange(aes(ymin = lower_CI, ymax = upper_CI)) + theme_bw() + theme(legend.position = "none") + xlab("") + ylab(expression(tau[1])) + ggtitle(paste0("Geometric parameter: ", round(geom_param, 7))) + theme(plot.title = element_text(hjust = 0.5)) + geom_hline(yintercept = dataset$true_tau1, linetype = "dotted")
 }
 
 # Plot estimates
 b <- do.call(grid.arrange, c(p_g, ncol = 2))
-ggsave(b, file="geom.eps", device="eps")
+ggsave(b, file = "geom.eps", device = "eps")
 do.call(grid.arrange, c(check, ncol = 2))
 
 # Summary tables
 theta_MLE_PY_g <- c()
 alpha_MLE_PY_g <- c()
 theta_MLE_DP_g <- c()
-for(i in 1:length(geom_param_list)){
+for (i in 1:length(geom_param_list)) {
   theta_MLE_PY_g[i] <- out_PY_g[[i]]$par[1]
   alpha_MLE_PY_g[i] <- out_PY_g[[i]]$par[2]
   theta_MLE_DP_g[i] <- out_DP_g[[i]]$par
 }
-df_geom <- data.frame(D=geom_param_list, 
-                 C=m1_g, E=true_tau1_g, G=as.integer(tau1_PY_g),
-                 H=paste("[", round(PY_lower_g, 0), ", ", round(PY_upper_g, 0), "]", sep = ""),
-                 I=as.integer(tau1_DP_g), 
-                 L=paste("[", round(DP_lower_g, 0), ", ",round(DP_upper_g, 0), "]", sep = ""),
-                 M=as.integer(tau1_bet_g), N=as.integer(tau1_skin_g))
-colnames(df_geom) = c("pi", "$m_1$", "$\\tau_1$",  "$\\tau_1^{PY}$", 
-                      "C.I. PY", "$\\tau_1^{DP}$", "C.I. DP", "$\\tau_1^B$", "$\\tau_1^S$")
-knitr::kable(df_geom,  col.names = c("pi", "m_1", "tau_1",  "tau_1 PY", 
-                                     "C.I. PY", "tau_1 DP", "C.I. DP", "tau_1 B", "tau_1 S"))
+df_geom <- data.frame(
+  D = geom_param_list,
+  C = m1_g, E = true_tau1_g, G = as.integer(tau1_PY_g),
+  H = paste("[", round(PY_lower_g, 0), ", ", round(PY_upper_g, 0), "]", sep = ""),
+  I = as.integer(tau1_DP_g),
+  L = paste("[", round(DP_lower_g, 0), ", ", round(DP_upper_g, 0), "]", sep = ""),
+  M = as.integer(tau1_bet_g), N = as.integer(tau1_skin_g)
+)
+colnames(df_geom) <- c(
+  "pi", "$m_1$", "$\\tau_1$", "$\\tau_1^{PY}$",
+  "C.I. PY", "$\\tau_1^{DP}$", "C.I. DP", "$\\tau_1^B$", "$\\tau_1^S$"
+)
+knitr::kable(df_geom, col.names = c(
+  "pi", "m_1", "tau_1", "tau_1 PY",
+  "C.I. PY", "tau_1 DP", "C.I. DP", "tau_1 B", "tau_1 S"
+))
 
-df_geom_param <- data.frame(A=round(geom_param_list,2)[1:2], O=theta_MLE_PY_g[1:2], P=alpha_MLE_PY_g[1:2], Q=theta_MLE_DP_g[1:2],
-                            A=round(geom_param_list,2)[3:4], O=theta_MLE_PY_g[3:4], P=alpha_MLE_PY_g[3:4], Q=theta_MLE_DP_g[3:4])
-colnames(df_geom_param) <- c('geom param', 'theta PY param', 'alpha PY param', 'theta DP param', 
-                             'geom param', 'theta PY param', 'alpha PY param', 'theta DP param')
+df_geom_param <- data.frame(
+  A = round(geom_param_list, 2)[1:2], O = theta_MLE_PY_g[1:2], P = alpha_MLE_PY_g[1:2], Q = theta_MLE_DP_g[1:2],
+  A = round(geom_param_list, 2)[3:4], O = theta_MLE_PY_g[3:4], P = alpha_MLE_PY_g[3:4], Q = theta_MLE_DP_g[3:4]
+)
+colnames(df_geom_param) <- c(
+  "geom param", "theta PY param", "alpha PY param", "theta DP param",
+  "geom param", "theta PY param", "alpha PY param", "theta DP param"
+)
 
 xtable(df_geom)
 xtable(df_geom_param)
-print(xtable(df_zipf), file='table.tex', sanitize.colnames.function = identity)
+print(xtable(df_zipf), file = "table.tex", sanitize.colnames.function = identity)
 
 
 # # ------
 # # compare minimax e MLE estimation of parameters
 # # ------
-# 
+#
 # alpha_hat_geom <- c()
 # theta_hat_geom <- c()
 # for(i in 1:length(geom_param_list)){
@@ -510,7 +529,7 @@ print(xtable(df_zipf), file='table.tex', sanitize.colnames.function = identity)
 #   theta_hat_geom[i] = max_EPPF_PY_theta(dataset_g[[i]]$frequencies, alpha_hat_geom[i])$par
 #   print(i)
 # }
-# 
+#
 # alpha_MLE_geom <- c()
 # for(i in 1:length(geom_param_list)) alpha_MLE_geom[i] = out_PY_g[[i]]$par[2]
 # theta_MLE_geom <- c()
@@ -519,7 +538,7 @@ print(xtable(df_zipf), file='table.tex', sanitize.colnames.function = identity)
 # for(i in 1:length(geom_param_list)) logEPPF_PY_minimax_geom[i] = logEPPF_PY(theta_hat_geom[i], alpha_hat_geom[i], dataset_g[[i]]$frequencies)
 # logEPPF_PY_MLE_geom <- c()
 # for(i in 1:length(geom_param_list)) logEPPF_PY_MLE_geom[i] = logEPPF_PY(theta_MLE_geom[i], alpha_MLE_geom[i], dataset_g[[i]]$frequencies)
-# df1 <- data.frame(a=alpha_hat_geom, b=alpha_MLE_geom, c=theta_hat_geom, d=theta_MLE_geom, e=logEPPF_PY_minimax_geom, f=logEPPF_PY_MLE_geom) 
+# df1 <- data.frame(a=alpha_hat_geom, b=alpha_MLE_geom, c=theta_hat_geom, d=theta_MLE_geom, e=logEPPF_PY_minimax_geom, f=logEPPF_PY_MLE_geom)
 # knitr::kable(df1, col.names =c("alpha minimax", "alpha MLE", "theta minimax",
 #                                "theta MLE", "log EPPF minimax", "log EPPF MLE"))
 
@@ -592,13 +611,13 @@ kable(data.frame(
   tau1_dp = tau1_DP, CI_DP = paste("[", DP_lower, ", ", DP_upper, "]", sep = ""),
   tau1_bet = tau1_bet, tau1_skin = tau1_skin
 ))
-m1 = dataset$m1
-true_tau1 = dataset$true_tau1
-CI_PY = paste("[", PY_lower, ", ", PY_upper, "]", sep = "")
-CI_DP = paste("[", DP_lower, ", ", DP_upper, "]", sep = "")
+m1 <- dataset$m1
+true_tau1 <- dataset$true_tau1
+CI_PY <- paste("[", PY_lower, ", ", PY_upper, "]", sep = "")
+CI_DP <- paste("[", DP_lower, ", ", DP_upper, "]", sep = "")
 
-df_custom <- data.frame(A=m1, B=true_tau1, C=tau1_PY, D=CI_PY, E=tau1_DP, f=CI_DP, G=tau1_bet, H=tau1_skin)
-colnames(df_custom) <- c('m1', 'tau_1', 'tau_1^PY', '95 CI PY', 'tau_1^DP', '95 CI DP', 'tau_1^B', 'tau_1^S')
+df_custom <- data.frame(A = m1, B = true_tau1, C = tau1_PY, D = CI_PY, E = tau1_DP, f = CI_DP, G = tau1_bet, H = tau1_skin)
+colnames(df_custom) <- c("m1", "tau_1", "tau_1^PY", "95 CI PY", "tau_1^DP", "95 CI DP", "tau_1^B", "tau_1^S")
 xtable(df_custom)
 
 # Plot estimates and confidence intervals
@@ -610,10 +629,10 @@ df <- data.frame(
 )
 
 p <- ggplot(df, aes(type, color = type, estim))
-p <- p  + geom_pointrange(aes(ymin = lower_CI, ymax = upper_CI), size=1.2) +  theme_bw(base_size = 18) +
-  theme(legend.position = "none") + xlab("") + ylab(expression(tau[1])) + ggtitle("Custom probabilities")  + theme(plot.title = element_text(hjust = 0.5)) + geom_hline(yintercept = dataset$true_tau1, linetype="dotted")
+p <- p + geom_pointrange(aes(ymin = lower_CI, ymax = upper_CI), size = 1.2) + theme_bw(base_size = 18) +
+  theme(legend.position = "none") + xlab("") + ylab(expression(tau[1])) + ggtitle("Custom probabilities") + theme(plot.title = element_text(hjust = 0.5)) + geom_hline(yintercept = dataset$true_tau1, linetype = "dotted")
 p
-ggsave(p, file='custom.eps', device='eps')
+ggsave(p, file = "custom.eps", device = "eps")
 
 
 # ------------------------
@@ -628,7 +647,7 @@ K_n_mix <- c()
 tau1_bet_mix <- c()
 tau1_skin_mix <- c()
 tau1_PY_mix <- c()
-tau1_DP_mix  <- c()
+tau1_DP_mix <- c()
 PY_lower_mix <- c()
 PY_upper_mix <- c()
 DP_lower_mix <- c()
@@ -638,12 +657,15 @@ m1_mix <- c()
 out_PY_mix <- list()
 dataset_mix <- list()
 param_list <- c(2, 1.75, 1.5)
-type_data <- c('Zipf', 'Zipf', 'Zipf')
+type_data <- c("Zipf", "Zipf", "Zipf")
 for (i in 1:length(param_list)) {
   param <- param_list[i]
   set.seed(123)
-  if(type_data[i]=='Geom')  dataset_mix[[i]] <- dataset_creation_geom(n = n, N = N, p = param)
-  else  dataset_mix[[i]] <- dataset_creation_zipf(n = n, zipf_param = param, N = N)
+  if (type_data[i] == "Geom") {
+    dataset_mix[[i]] <- dataset_creation_geom(n = n, N = N, p = param)
+  } else {
+    dataset_mix[[i]] <- dataset_creation_zipf(n = n, zipf_param = param, N = N)
+  }
 
   # PY estimation
   out_PY_mix[[i]] <- max_EPPF_PY(dataset_mix[[i]]$frequencies)
@@ -670,14 +692,12 @@ for (i in 1:length(param_list)) {
     type = factor(type), estim = estimates,
     lower_CI = c(PY_lower_mix[i], DP_lower_mix[i], NA, NA), upper_CI = c(PY_upper_mix[i], DP_upper_mix[i], NA, NA)
   )
-  
+
   p_mix[[i]] <- ggplot(df, aes(type, estim))
-  p_mix[[i]] <- p_mix[[i]] + geom_pointrange(aes(ymin = lower_CI, ymax = upper_CI), size=1.2) + theme_bw() + theme(legend.position = "none") + xlab("") + ylab(expression(tau[1])) + ggtitle(paste0(type_data[i], " parameter: ", round(param, 7)))  + theme(plot.title = element_text(hjust = 0.5)) + geom_hline(yintercept = dataset_mix[[i]]$true_tau1, linetype="dotted")
+  p_mix[[i]] <- p_mix[[i]] + geom_pointrange(aes(ymin = lower_CI, ymax = upper_CI), size = 1.2) + theme_bw() + theme(legend.position = "none") + xlab("") + ylab(expression(tau[1])) + ggtitle(paste0(type_data[i], " parameter: ", round(param, 7))) + theme(plot.title = element_text(hjust = 0.5)) + geom_hline(yintercept = dataset_mix[[i]]$true_tau1, linetype = "dotted")
 }
 
 plot_mix <- do.call(grid.arrange, c(p_mix, ncol = length(param_list)))
 
-ggsave(plot_mix, height=5, width=7*2.5, file="mix.png", device="png")
-ggsave(plot_mix, height=5, width=7*2.5, file="mix.eps", device="eps")
-
-
+ggsave(plot_mix, height = 5, width = 7 * 2.5, file = "mix.png", device = "png")
+ggsave(plot_mix, height = 5, width = 7 * 2.5, file = "mix.eps", device = "eps")
