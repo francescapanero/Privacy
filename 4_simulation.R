@@ -125,8 +125,8 @@ PY_upper <- quantile(PY_sim, 1 - 0.01 / 2)
 # Dirichlet process estimation
 out_DP <- max_EPPF_DP(dataset$frequencies)
 tau1_DP <- tau1_dp(dataset$m1, dataset$n, out_DP$par[1], dataset$N)
-DP_lower <- qhyper(0.01 / 2, out_DP$par[1] + dataset$n - 1, dataset$N - dataset$n, dataset$m1)
-DP_upper <- qhyper(1 - 0.01 / 2, out_DP$par[1] + dataset$n - 1, dataset$N - dataset$n, dataset$m1)
+DP_lower <- qhyper2(0.01 / 2, out_DP$par[1] + dataset$n - 1, dataset$N - dataset$n, dataset$m1)
+DP_upper <- qhyper2(1 - 0.01 / 2, out_DP$par[1] + dataset$n - 1, dataset$N - dataset$n, dataset$m1)
 
 # Bethlehem and Skinner estimators
 estim <- tau1_bs(dataset$frequencies, dataset$N)
@@ -203,18 +203,6 @@ for (i in 1:length(zipf_param_list)) {
   true_tau1[i] <- dataset[[i]]$true_tau1
   m1[i] <- dataset[[i]]$m1
 
-  # # Comparison between M_l and the expected values
-  # M_l <- as.numeric(table(factor(dataset[[i]]$frequencies, levels = 1:dataset[[i]]$n)))
-
-  # # PY comparison
-  # tab <- rbind(
-  #   PY = expected_m_py(1:15, dataset[[i]]$n, out_PY$par[2], out_PY$par[1]),
-  #   Data = M_l[1:15]
-  # )
-  # colnames(tab) <- 1:15
-  # kable(tab, digits = 0)
-  # check[[i]] <- frequency_check_PY(dataset[[i]]$frequencies)
-
   # PY estimation
   out_PY[[i]] <- max_EPPF_PY(dataset[[i]]$frequencies)
   tau1_PY[i] <- tau1_py(dataset[[i]]$m1, dataset[[i]]$n, out_PY[[i]]$par[1], out_PY[[i]]$par[2], dataset[[i]]$N)
@@ -225,8 +213,8 @@ for (i in 1:length(zipf_param_list)) {
   # Dirichlet process estimation
   out_DP[[i]] <- max_EPPF_DP(dataset[[i]]$frequencies)
   tau1_DP[i] <- tau1_dp(dataset[[i]]$m1, dataset[[i]]$n, out_DP[[i]]$par[1], dataset[[i]]$N)
-  DP_lower[i] <- qhyper(0.01 / 2, out_DP[[i]]$par[1] + dataset[[i]]$n - 1, dataset[[i]]$N - dataset[[i]]$n, dataset[[i]]$m1)
-  DP_upper[i] <- qhyper(1 - 0.01 / 2, out_DP[[i]]$par[1] + dataset[[i]]$n - 1, dataset[[i]]$N - dataset[[i]]$n, dataset[[i]]$m1)
+  DP_lower[i] <- qhyper2(0.01 / 2, out_DP[[i]]$par[1] + dataset[[i]]$n - 1, dataset[[i]]$N - dataset[[i]]$n, dataset[[i]]$m1)
+  DP_upper[i] <- qhyper2(1 - 0.01 / 2, out_DP[[i]]$par[1] + dataset[[i]]$n - 1, dataset[[i]]$N - dataset[[i]]$n, dataset[[i]]$m1)
 
   # Bethlehem and Skinner estimators
   estim <- tau1_bs(dataset[[i]]$frequencies, dataset[[i]]$N)
@@ -364,8 +352,8 @@ PY_upper <- quantile(PY_sim, 1 - 0.01 / 2)
 # Dirichlet process estimation
 out_DP <- max_EPPF_DP(dataset$frequencies)
 tau1_DP <- tau1_dp(dataset$m1, dataset$n, out_DP$par[1], dataset$N)
-DP_lower <- qhyper(0.01 / 2, out_DP$par[1] + dataset$n - 1, dataset$N - dataset$n, dataset$m1)
-DP_upper <- qhyper(1 - 0.01 / 2, out_DP$par[1] + dataset$n - 1, dataset$N - dataset$n, dataset$m1)
+DP_lower <- qhyper2(0.01 / 2, out_DP$par[1] + dataset$n - 1, dataset$N - dataset$n, dataset$m1)
+DP_upper <- qhyper2(1 - 0.01 / 2, out_DP$par[1] + dataset$n - 1, dataset$N - dataset$n, dataset$m1)
 
 # Bethlehem and Skinner estimators
 estim <- tau1_bs(dataset$frequencies, dataset$N)
@@ -445,8 +433,8 @@ for (i in 1:length(geom_param_list)) {
   # Dirichlet process estimation
   out_DP_g[[i]] <- max_EPPF_DP(dataset_g[[i]]$frequencies)
   tau1_DP_g[i] <- tau1_dp(dataset_g[[i]]$m1, dataset_g[[i]]$n, out_DP_g[[i]]$par[1], dataset_g[[i]]$N)
-  DP_lower_g[i] <- qhyper(0.01 / 2, out_DP_g[[i]]$par[1] + dataset_g[[i]]$n - 1, dataset_g[[i]]$N - dataset_g[[i]]$n, dataset_g[[i]]$m1)
-  DP_upper_g[i] <- qhyper(1 - 0.01 / 2, out_DP_g[[i]]$par[1] + dataset_g[[i]]$n - 1, dataset_g[[i]]$N - dataset_g[[i]]$n, dataset_g[[i]]$m1)
+  DP_lower_g[i] <- qhyper2(0.01 / 2, out_DP_g[[i]]$par[1] + dataset_g[[i]]$n - 1, dataset_g[[i]]$N - dataset_g[[i]]$n, dataset_g[[i]]$m1)
+  DP_upper_g[i] <- qhyper2(1 - 0.01 / 2, out_DP_g[[i]]$par[1] + dataset_g[[i]]$n - 1, dataset_g[[i]]$N - dataset_g[[i]]$n, dataset_g[[i]]$m1)
 
   # Bethlehem and Skinner estimators
   estim <- tau1_bs(dataset_g[[i]]$frequencies, dataset_g[[i]]$N)
@@ -593,8 +581,8 @@ PY_upper <- quantile(PY_sim, 1 - 0.01 / 2)
 # Dirichlet process estimation
 out_DP <- max_EPPF_DP(dataset$frequencies)
 tau1_DP <- tau1_dp(dataset$m1, dataset$n, out_DP$par[1], dataset$N)
-DP_lower <- qhyper(0.01 / 2, out_DP$par[1] + dataset$n - 1, dataset$N - dataset$n, dataset$m1)
-DP_upper <- qhyper(1 - 0.01 / 2, out_DP$par[1] + dataset$n - 1, dataset$N - dataset$n, dataset$m1)
+DP_lower <- qhyper2(0.01 / 2, out_DP$par[1] + dataset$n - 1, dataset$N - dataset$n, dataset$m1)
+DP_upper <- qhyper2(1 - 0.01 / 2, out_DP$par[1] + dataset$n - 1, dataset$N - dataset$n, dataset$m1)
 
 # Bethlehem and Skinner estimators
 estim <- tau1_bs(dataset$frequencies, dataset$N)
@@ -677,8 +665,8 @@ for (i in 1:length(param_list)) {
   # Dirichlet process estimation
   out_DP_mix <- max_EPPF_DP(dataset_mix[[i]]$frequencies)
   tau1_DP_mix[i] <- tau1_dp(dataset_mix[[i]]$m1, dataset_mix[[i]]$n, out_DP_mix$par[1], dataset_mix[[i]]$N)
-  DP_lower_mix[i] <- qhyper(0.01 / 2, out_DP_mix$par[1] + dataset_mix[[i]]$n - 1, dataset_mix[[i]]$N - dataset_mix[[i]]$n, dataset_mix[[i]]$m1)
-  DP_upper_mix[i] <- qhyper(1 - 0.01 / 2, out_DP_mix$par[1] + dataset_mix[[i]]$n - 1, dataset_mix[[i]]$N - dataset_mix[[i]]$n, dataset_mix[[i]]$m1)
+  DP_lower_mix[i] <- qhyper2(0.01 / 2, out_DP_mix$par[1] + dataset_mix[[i]]$n - 1, dataset_mix[[i]]$N - dataset_mix[[i]]$n, dataset_mix[[i]]$m1)
+  DP_upper_mix[i] <- qhyper2(1 - 0.01 / 2, out_DP_mix$par[1] + dataset_mix[[i]]$n - 1, dataset_mix[[i]]$N - dataset_mix[[i]]$n, dataset_mix[[i]]$m1)
 
   # Bethlehem and Skinner estimators
   estim <- tau1_bs(dataset_mix[[i]]$frequencies, dataset_mix[[i]]$N)

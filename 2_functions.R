@@ -6,6 +6,15 @@ library(MASS)
 
 Rcpp::sourceCpp("3_cluster_py.cpp")
 
+# Alternative implementation of rhyper, but we allow m to be a real number
+qhyper2 <- function(p, m, n, k) {
+  x <- 0:k
+  lprobs <- lchoose(m, x) + lchoose(n, k - x) - lchoose(m + n, k) #choose(m, x) choose(n, k-x) / choose(m+n, k)
+  lprobs <- lprobs
+  probs <- exp(lprobs)
+  cdf <- cumsum(probs)
+  findInterval(p, sort(cdf))
+}
 
 # Alternative implementation of rhyper, but we allow m to be a real number
 rhyper2 <- function(nn, m, n, k){

@@ -52,8 +52,8 @@ PY_upper <- quantile(PY_sim, 1 - alpha / 2)
 # Dirichlet process estimation
 out_DP <- max_EPPF_DP(dataset$frequencies)
 tau1_DP <- tau1_dp(dataset$m1, dataset$n, out_DP$par[1], dataset$N)
-DP_lower <- qhyper(alpha / 2, out_DP$par[1] + dataset$n - 1, dataset$N - dataset$n, dataset$m1)
-DP_upper <- qhyper(1 - alpha / 2, out_DP$par[1] + dataset$n - 1, dataset$N - dataset$n, dataset$m1)
+DP_lower <- qhyper2(alpha / 2, out_DP$par[1] + dataset$n - 1, dataset$N - dataset$n, dataset$m1)
+DP_upper <- qhyper2(1 - alpha / 2, out_DP$par[1] + dataset$n - 1, dataset$N - dataset$n, dataset$m1)
 
 # Bethlehem and Skinner estimators
 estim <- tau1_bs(dataset$frequencies, dataset$N)
@@ -155,8 +155,8 @@ PY_upper <- quantile(PY_sim, 1 - alpha / 2)
 # Dirichlet process estimation
 out_DP <- max_EPPF_DP(dataset$frequencies)
 tau1_DP <- tau1_dp(dataset$m1, dataset$n, out_DP$par[1], dataset$N)
-DP_lower <- qhyper(alpha / 2, out_DP$par[1] + dataset$n - 1, dataset$N - dataset$n, dataset$m1)
-DP_upper <- qhyper(1 - alpha / 2, out_DP$par[1] + dataset$n - 1, dataset$N - dataset$n, dataset$m1)
+DP_lower <- qhyper2(alpha / 2, out_DP$par[1] + dataset$n - 1, dataset$N - dataset$n, dataset$m1)
+DP_upper <- qhyper2(1 - alpha / 2, out_DP$par[1] + dataset$n - 1, dataset$N - dataset$n, dataset$m1)
 
 # Bethlehem and Skinner estimators
 estim <- tau1_bs(dataset$frequencies, dataset$N)
