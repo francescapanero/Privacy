@@ -3,6 +3,13 @@ library(ggplot2)
 library(knitr)
 library(EnvStats)
 library(MASS)
+library(xtable)
+library(gridExtra)
+library(dplyr)
+library(reticulate) # Library that interface R to python
+use_condaenv() # Use python anaconda
+
+random <- import("numpy.random") # Import python libraries
 
 Rcpp::sourceCpp("3_cluster_py.cpp")
 
@@ -253,4 +260,69 @@ f_alpha <- function(alpha, ind_max, cumsum_m, K_n) {
 PY_alpha <- function(freq, ind_max, cumsum_m, K_n) {
   a <- uniroot(f_alpha, c(0, 1), ind_max = ind_max, cumsum_m = cumsum_m, K_n = K_n)
   return(a$root)
+}
+
+dataset_creation_zipf <- function(n, zipf_param, N) {
+  
+  # Old implementation using truncated zipf laws
+  # probs <- 1 / (1:H)^(zipf_param)
+  # points_full <- factor(sample(1:H, N, prob = probs, replace = TRUE), levels = 1:H)
+  
+  # Using python zipf sampler
+  points_full <- factor(random$zipf(zipf_param, N))
+  points_obs <- sample(points_full, n, replace = FALSE)
+  
+  # Observed frequencies
+  freq_full <- as.numeric(table(points_full))
+  freq_observed <- as.numeric(table(points_obs))
+  
+  # True tau1
+  true_tau1 <- sum((freq_full == 1) & (freq_observed == 1))
+  freq_observed <- freq_observed[freq_observed > 0]
+  
+  list(
+    frequencies = freq_observed, n = sum(freq_observed), N = sum(freq_full),
+    K_n = sum(freq_observed > 0), K_N = sum(freq_full > 0),
+    m1 = sum(freq_observed == 1), percentage = n / N, zipf_param = zipf_param, true_tau1 = true_tau1
+  )
+}
+
+dataset_creation_geom <- function(n, N, p) {
+  points_full <- factor(rgeom(N, p = p))
+  points_obs <- sample(points_full, n, replace = FALSE)
+  
+  # Observed frequencies
+  freq_full <- as.numeric(table(points_full))
+  freq_observed <- as.numeric(table(points_obs))
+  
+  # True tau1
+  true_tau1 <- sum((freq_full == 1) & (freq_observed == 1))
+  freq_observed <- freq_observed[freq_observed > 0]
+  
+  list(
+    frequencies = freq_observed, n = sum(freq_observed), N = sum(freq_full),
+    K_n = sum(freq_observed > 0), K_N = sum(freq_full > 0),
+    m1 = sum(freq_observed == 1), percentage = n / N, true_tau1 = true_tau1
+  )
+}
+
+dataset_creation_probs <- function(n, N, probs) {
+  
+  H <- length(probs)
+  points_full <- factor(sample(1:H, N, prob = probs, replace = TRUE))
+  points_obs <- sample(points_full, n, replace = FALSE)
+  
+  # Observed frequencies
+  freq_full <- as.numeric(table(points_full))
+  freq_observed <- as.numeric(table(points_obs))
+  
+  # True tau1
+  true_tau1 <- sum((freq_full == 1) & (freq_observed == 1))
+  freq_observed <- freq_observed[freq_observed > 0]
+  
+  list(
+    frequencies = freq_observed, n = sum(freq_observed), N = sum(freq_full),
+    K_n = sum(freq_observed > 0), K_N = sum(freq_full > 0),
+    m1 = sum(freq_observed == 1), percentage = n / N, true_tau1 = true_tau1
+  )
 }
