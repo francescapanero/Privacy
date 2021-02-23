@@ -23,21 +23,23 @@ out_DP <- max_EPPF_DP(dataset$frequencies)
 # Comparison between M_l and the expected values
 M_l <- as.numeric(table(factor(dataset$frequencies, levels = 1:dataset$n)))
 
-# PY comparison
+# Table creation
 tab <- rbind(
-  PY = expected_m_py(1:15, dataset$n, out_PY$par[2], out_PY$par[1]),
-  DP = expected_m_dp(1:15, dataset$n, out_DP$par[1]),
-  Data = M_l[1:15]
+  PY = expected_m_py(1:10, dataset$n, out_PY$par[2], out_PY$par[1]),
+  DP = expected_m_dp(1:10, dataset$n, out_DP$par[1]),
+  Data = M_l[1:10]
 )
 
-colnames(tab) <- 1:15
+colnames(tab) <- 1:10
 kable(tab, digits = 0)
+xtable(tab, digits=0)
 
 
 p_check <- frequency_check_PY(dataset$frequencies)
-p_check <- p_check + ggtitle(paste("5%")) + theme(plot.title = element_text(hjust = 0.5, size = 30))
+p_check <- p_check + ggtitle(paste("Dataset percentage: 5%")) + theme(plot.title = element_text(hjust = 0.5, size = 10))
 p_check
-ggsave(p_check, height = 5, width = 4 * 2.5, file = "check_5.eps", device = "eps")
+
+# ggsave(p_check, height = 5, width = 4 * 2.5, file = "check_5.eps", device = "eps")
 
 
 # ---------------------------
@@ -114,7 +116,7 @@ p <- p + geom_pointrange(aes(ymin = lower_CI, ymax = upper_CI)) + theme_bw() +
   theme(legend.position = "none") + xlab("") + ylab(expression(tau[1])) + ggtitle(paste("5%")) +
   theme(plot.title = element_text(hjust = 0.5, size = 30)) + geom_hline(yintercept = dataset$true_tau1, linetype = "dotted")
 p
-ggsave(p, file = "5perc.eps", device = "eps")
+ggsave(p, file = "img/5perc.eps", device = "eps")
 
 # -------------------------------
 # 10% dataset
@@ -133,26 +135,29 @@ out_DP <- max_EPPF_DP(dataset$frequencies)
 # Comparison between M_l and the expected values
 M_l <- as.numeric(table(factor(dataset$frequencies, levels = 1:dataset$n)))
 
-# PY comparison
+# Table creation
 tab <- rbind(
-  PY = expected_m_py(1:15, dataset$n, out_PY$par[2], out_PY$par[1]),
-  DP = expected_m_dp(1:15, dataset$n, out_DP$par[1]),
-  Data = M_l[1:15]
+  PY = expected_m_py(1:10, dataset$n, out_PY$par[2], out_PY$par[1]),
+  DP = expected_m_dp(1:10, dataset$n, out_DP$par[1]),
+  Data = M_l[1:10]
 )
 
-colnames(tab) <- 1:15
+colnames(tab) <- 1:10
 kable(tab, digits = 0)
+xtable(tab, digits=0)
+
 p1_check <- frequency_check_PY(dataset$frequencies)
-p1_check <- p1_check + ggtitle(paste("10%")) + theme(plot.title = element_text(hjust = 0.5, size = 30))
+p1_check <- p1_check + ggtitle(paste("Dataset percentage: 10%")) + theme(plot.title = element_text(hjust = 0.5, size = 10))
 p1_check
-ggsave(p1_check, height = 5, width = 4 * 2.5, file = "check_10.eps", device = "eps")
+# ggsave(p1_check, height = 5, width = 4 * 2.5, file = "img/check_10.eps", device = "eps")
 
 # Figure 3 in the paper
 p_check_tog <- list()
 p_check_tog[[1]] <- p_check
 p_check_tog[[2]] <- p1_check
 a <- do.call(grid.arrange, c(p_check_tog, ncol = 2))
-ggsave(a, height = 5, width = 4 * 2.5, file = "check.eps", device = "eps")
+
+ggsave(a, height = 4, width = 10, file = "img/check.eps", device = "eps")
 
 # ---------------------------
 # PY estimation
