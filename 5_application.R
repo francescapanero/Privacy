@@ -3,6 +3,7 @@ library(tidyverse)
 library(dplyr)
 library(knitr)
 library(ggpubr)
+library(gridExtra)
 
 rm(list = ls())
 
@@ -148,8 +149,11 @@ p1_check
 ggsave(p1_check, height=5, width=4*2.5, file="check_10.eps", device="eps")
 
 # Figure 3 in the paper
-check_together <- ggarrange(p_check, p1_check, ncol=2) + scale_fill_grey()
-ggsave(check_together, height=5, width=4*2.5, file="check.eps", device="eps")
+p_check_tog <- list()
+p_check_tog[[1]] <- p_check
+p_check_tog[[2]] <- p1_check
+a <- do.call(grid.arrange, c(p_check_tog, ncol = 2))
+ggsave(a, height=5, width=4*2.5, file="check.eps", device="eps")
 
 # ---------------------------
 # PY estimation
@@ -224,5 +228,8 @@ p1 <- p1 + geom_pointrange(aes(ymin = lower_CI, ymax = upper_CI)) + theme_bw() +
 p1
 
 # Figure 2 in the paper
-p_together <- ggarrange(p, p1, ncol=2) + scale_fill_grey()
-ggsave(p_together, height=5, width=4*2.5, file="ipmus.eps", device="eps")
+p_together <- list()
+p_together[[1]] <- p
+p_together[[2]] <- p1
+b <- do.call(grid.arrange, c(p_together, ncol = 2))
+ggsave(b, height=5, width=4*2.5, file="ipmus", device="eps")
