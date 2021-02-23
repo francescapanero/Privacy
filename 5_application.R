@@ -37,9 +37,9 @@ tab <- rbind(
 colnames(tab) <- 1:15
 kable(tab, digits = 0)
 p_check <- frequency_check_PY(dataset$frequencies)
-p_check <- p_check + ggtitle(paste("5%")) + theme(plot.title = element_text(hjust = 0.5, size=30)) 
+p_check <- p_check + ggtitle(paste("5%")) + theme(plot.title = element_text(hjust = 0.5, size = 30))
 p_check
-ggsave(p_check, height=5, width=4*2.5, file="check_5.eps", device="eps")
+ggsave(p_check, height = 5, width = 4 * 2.5, file = "check_5.eps", device = "eps")
 
 
 # ---------------------------
@@ -110,12 +110,13 @@ df <- data.frame(
   lower_CI = c(PY_lower, DP_lower, NA, NA, NA), upper_CI = c(PY_upper, DP_upper, NA, NA, NA)
 )
 
-p <- ggplot(df, aes(type, estim)) + scale_x_discrete(limits=c('B', 'DP', 'PY', 'S', 'C'))
+p <- ggplot(df, aes(type, estim)) +
+  scale_x_discrete(limits = c("B", "DP", "PY", "S", "C"))
 p <- p + geom_pointrange(aes(ymin = lower_CI, ymax = upper_CI)) + theme_bw() +
   theme(legend.position = "none") + xlab("") + ylab(expression(tau[1])) + ggtitle(paste("5%")) +
-  theme(plot.title = element_text(hjust = 0.5, size=30)) + geom_hline(yintercept = dataset$true_tau1, linetype = "dotted")
+  theme(plot.title = element_text(hjust = 0.5, size = 30)) + geom_hline(yintercept = dataset$true_tau1, linetype = "dotted")
 p
-ggsave(p, file='5perc.eps', device='eps')
+ggsave(p, file = "5perc.eps", device = "eps")
 
 # -------------------------------
 # 10% dataset
@@ -144,16 +145,16 @@ tab <- rbind(
 colnames(tab) <- 1:15
 kable(tab, digits = 0)
 p1_check <- frequency_check_PY(dataset$frequencies)
-p1_check <- p1_check + ggtitle(paste("10%")) + theme(plot.title = element_text(hjust = 0.5, size=30)) 
+p1_check <- p1_check + ggtitle(paste("10%")) + theme(plot.title = element_text(hjust = 0.5, size = 30))
 p1_check
-ggsave(p1_check, height=5, width=4*2.5, file="check_10.eps", device="eps")
+ggsave(p1_check, height = 5, width = 4 * 2.5, file = "check_10.eps", device = "eps")
 
 # Figure 3 in the paper
 p_check_tog <- list()
 p_check_tog[[1]] <- p_check
 p_check_tog[[2]] <- p1_check
 a <- do.call(grid.arrange, c(p_check_tog, ncol = 2))
-ggsave(a, height=5, width=4*2.5, file="check.eps", device="eps")
+ggsave(a, height = 5, width = 4 * 2.5, file = "check.eps", device = "eps")
 
 # ---------------------------
 # PY estimation
@@ -221,10 +222,11 @@ df <- data.frame(
   lower_CI = c(PY_lower, DP_lower, NA, NA, NA), upper_CI = c(PY_upper, DP_upper, NA, NA, NA)
 )
 
-p1 <- ggplot(df, aes(type, estim)) + scale_x_discrete(limits=c('B', 'DP', 'PY', 'S', 'C'))
+p1 <- ggplot(df, aes(type, estim)) +
+  scale_x_discrete(limits = c("B", "DP", "PY", "S", "C"))
 p1 <- p1 + geom_pointrange(aes(ymin = lower_CI, ymax = upper_CI)) + theme_bw() +
   theme(legend.position = "none") + xlab("") + ylab(expression(tau[1])) + ggtitle(paste("10%")) +
-  theme(plot.title = element_text(hjust = 0.5, size=30)) + geom_hline(yintercept = dataset$true_tau1, linetype = "dotted")
+  theme(plot.title = element_text(hjust = 0.5, size = 30)) + geom_hline(yintercept = dataset$true_tau1, linetype = "dotted")
 p1
 
 # Figure 2 in the paper
@@ -232,4 +234,4 @@ p_together <- list()
 p_together[[1]] <- p
 p_together[[2]] <- p1
 b <- do.call(grid.arrange, c(p_together, ncol = 2))
-ggsave(b, height=5, width=4*2.5, file="ipmus", device="eps")
+ggsave(b, height = 5, width = 4 * 2.5, file = "ipmus", device = "eps")
