@@ -154,12 +154,12 @@ frequency_check_PY <- function(frequencies) {
   data_plot <- data.frame(Size = idx, M_l = M_l[idx], Theoretical = expected_m_py(idx, n = n, alpha = alpha, theta = theta))
   p <- ggplot(data = data_plot, aes(x = Size, y = M_l)) +
     geom_point() +
-    geom_line(aes(y = Theoretical), color = "blue", linetype = "dashed") +
+    geom_line(aes(y = Theoretical), color = "black", linetype = "dashed") +
     scale_y_log10() +
     scale_x_log10() +
     theme_bw() +
-    xlab("l") +
-    ylab(expression(M[l]))
+    xlab("r") +
+    ylab(expression(M[r]))
   p
 }
 
@@ -215,15 +215,23 @@ mle_negbin <- function(x) {
   return(c)
 }
 
+g_i <- function(i, lambda, pois_param, m){
+  if(m[i+1] != 0)  return((-1)^i * exp(log(i+1) + i * log(lambda) + log(ppois(i-1, pois_param, lower.tail=FALSE)) + log(m[i+1])))
+  else  return(0)
+}
+
 tau1_np_pois <- function(N, n, freq){
-  lambda = N - n / n
+  lambda = (N - n) / n
   m <- rep(0, n)
   a = data.frame(freq) %>% group_by(freq) %>% summarise(count=n())
   for(j in 1:n){
     if(j %in% a$freq) m[j] = a$count[match(j ,a$freq)]
   }
   ind_max = tail(which(m!=0), 1)
-  pois_par <- log(n/(2*lambda-1))/(4*lambda)
+  pois_param <- log(n / (2*lambda-1)) / (4*lambda)
+  ind = c(0:(ind_max-1))
+  b = sapply(ind, g_i, pois_param=pois_param, lambda=lambda, m=m)
+  return(sum(b))
 }
 
 f_i <- function(alpha, i, cumsum){

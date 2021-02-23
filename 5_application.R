@@ -2,6 +2,7 @@
 library(tidyverse)
 library(dplyr)
 library(knitr)
+library(ggpubr)
 
 rm(list = ls())
 
@@ -34,7 +35,11 @@ tab <- rbind(
 
 colnames(tab) <- 1:15
 kable(tab, digits = 0)
-frequency_check_PY(dataset$frequencies)
+p_check <- frequency_check_PY(dataset$frequencies)
+p_check <- p_check + ggtitle(paste("5%")) + theme(plot.title = element_text(hjust = 0.5, size=30)) 
+p_check
+ggsave(p_check, height=5, width=4*2.5, file="check_5.eps", device="eps")
+
 
 # ---------------------------
 # PY estimation
@@ -59,6 +64,7 @@ DP_upper <- qhyper2(1 - alpha / 2, out_DP$par[1] + dataset$n - 1, dataset$N - da
 estim <- tau1_bs(dataset$frequencies, dataset$N)
 tau1_bet <- estim[1]
 tau1_skin <- estim[2]
+tau1_cam <- tau1_np_pois(dataset$N, dataset$n, dataset$frequencies)
 
 # Summary
 kable(data.frame(
@@ -68,7 +74,7 @@ kable(data.frame(
   true_tau1 = dataset$true_tau1,
   tau1_py = tau1_PY, CI_PY = paste("[", PY_lower, ", ", PY_upper, "]", sep = ""),
   tau1_dp = tau1_DP, CI_DP = paste("[", DP_lower, ", ", DP_upper, "]", sep = ""),
-  tau1_bet = tau1_bet, tau1_skin = tau1_skin
+  tau1_bet = tau1_bet, tau1_skin = tau1_skin, tau1_cam = tau1_cam
 ))
 
 
@@ -81,31 +87,31 @@ result <- data.frame(
   true_tau1 = dataset$true_tau1,
   tau1_py = round(tau1_PY, 0), CI_PY = paste("[", round(PY_lower, 0), ", ", round(PY_upper, 0), "]", sep = ""),
   tau1_dp = round(tau1_DP, 0), CI_DP = paste("[", round(DP_lower, 0), ", ", round(DP_upper, 0), "]", sep = ""),
-  tau1_bet = round(tau1_bet, 0), tau1_skin = round(tau1_skin, 0)
+  tau1_bet = round(tau1_bet, 0), tau1_skin = round(tau1_skin, 0), tau1_cam = round(tau1_cam, 0)
 )
 
 # change col names
 result %>%
-  kable(., col.names = c("N", "% sample", "# classes", "# sample uniques", "tau_1 true", "PY", "CI PY", "DP", "CI DP", "Bethelehem", "Skinner"))
+  kable(., col.names = c("N", "% sample", "# classes", "# sample uniques", "tau_1 true", "PY", "CI PY", "DP", "CI DP", "Bethelehem", "Skinner", "Camerlenghi"))
 
 # Latex table
 result %>%
   kable(., "latex",
     escape = F, booktabs = T, linesep = "", align = "c",
-    col.names = c("N", "$\\%$ sample", "$\\#$ classes", "# sample uniques", "$\\tau_1$ true", "PY", "CI PY", "DP", "CI DP", "Bethelehem", "Skinner")
+    col.names = c("N", "$\\%$ sample", "$\\#$ classes", "# sample uniques", "$\\tau_1$ true", "PY", "CI PY", "DP", "CI DP", "Bethelehem", "Skinner", "Camerlenghi")
   )
 
 # Plot estimates and confidence intervals
-type <- c("PY", "DP", "B", "S")
-estimates <- c(tau1_PY, tau1_DP, tau1_bet, tau1_skin)
+type <- c("PY", "DP", "B", "S", "C")
+estimates <- c(tau1_PY, tau1_DP, tau1_bet, tau1_skin, tau1_cam)
 df <- data.frame(
   type = factor(type, levels = type[order(estimates)]), estim = estimates,
-  lower_CI = c(PY_lower, DP_lower, NA, NA), upper_CI = c(PY_upper, DP_upper, NA, NA)
+  lower_CI = c(PY_lower, DP_lower, NA, NA, NA), upper_CI = c(PY_upper, DP_upper, NA, NA, NA)
 )
 
-p <- ggplot(df, aes(type, estim)) + scale_x_discrete(limits=c('B', 'DP', 'PY', 'S'))
+p <- ggplot(df, aes(type, estim)) + scale_x_discrete(limits=c('B', 'DP', 'PY', 'S', 'C'))
 p <- p + geom_pointrange(aes(ymin = lower_CI, ymax = upper_CI)) + theme_bw() +
-  theme(legend.position = "none") + xlab("") + ylab(expression(tau[1])) + ggtitle(paste("5 % sample")) +
+  theme(legend.position = "none") + xlab("") + ylab(expression(tau[1])) + ggtitle(paste("5%")) +
   theme(plot.title = element_text(hjust = 0.5, size=30)) + geom_hline(yintercept = dataset$true_tau1, linetype = "dotted")
 p
 ggsave(p, file='5perc.eps', device='eps')
@@ -136,7 +142,14 @@ tab <- rbind(
 
 colnames(tab) <- 1:15
 kable(tab, digits = 0)
-frequency_check_PY(dataset$frequencies)
+p1_check <- frequency_check_PY(dataset$frequencies)
+p1_check <- p1_check + ggtitle(paste("10%")) + theme(plot.title = element_text(hjust = 0.5, size=30)) 
+p1_check
+ggsave(p1_check, height=5, width=4*2.5, file="check_10.eps", device="eps")
+
+# Figure 3 in the paper
+check_together <- ggarrange(p_check, p1_check, ncol=2) + scale_fill_grey()
+ggsave(check_together, height=5, width=4*2.5, file="check.eps", device="eps")
 
 # ---------------------------
 # PY estimation
@@ -161,6 +174,7 @@ DP_upper <- qhyper2(1 - alpha / 2, out_DP$par[1] + dataset$n - 1, dataset$N - da
 estim <- tau1_bs(dataset$frequencies, dataset$N)
 tau1_bet <- estim[1]
 tau1_skin <- estim[2]
+tau1_cam <- tau1_np_pois(dataset$N, dataset$n, dataset$frequencies)
 
 # Summary
 kable(data.frame(
@@ -181,35 +195,34 @@ result <- data.frame(
   true_tau1 = dataset$true_tau1,
   tau1_py = round(tau1_PY, 0), CI_PY = paste("[", round(PY_lower, 0), ", ", round(PY_upper, 0), "]", sep = ""),
   tau1_dp = round(tau1_DP, 0), CI_DP = paste("[", round(DP_lower, 0), ", ", round(DP_upper, 0), "]", sep = ""),
-  tau1_bet = round(tau1_bet, 0), tau1_skin = round(tau1_skin, 0)
+  tau1_bet = round(tau1_bet, 0), tau1_skin = round(tau1_skin, 0), tau1_cam = round(tau1_cam, 0)
 )
 
 # change col names
 result %>%
-  kable(., col.names = c("N", "% sample", "# classes", "# sample uniques", "tau_1 true", "PY", "CI PY", "DP", "CI DP", "Bethelehem", "Skinner"))
+  kable(., col.names = c("N", "% sample", "# classes", "# sample uniques", "tau_1 true", "PY", "CI PY", "DP", "CI DP", "Bethelehem", "Skinner", "Camerlenghi"))
 
 # Latex table
 result %>%
   kable(., "latex",
     escape = F, booktabs = T, linesep = "", align = "c",
-    col.names = c("N", "$\\%$ sample", "$\\#$ classes", "# sample uniques", "$\\tau_1$ true", "PY", "CI PY", "DP", "CI DP", "Bethelehem", "Skinner")
+    col.names = c("N", "$\\%$ sample", "$\\#$ classes", "# sample uniques", "$\\tau_1$ true", "PY", "CI PY", "DP", "CI DP", "Bethelehem", "Skinner", "Camerlenghi")
   )
 
 # Plot estimates and confidence intervals
-type <- c("PY", "DP", "B", "S")
-estimates <- c(tau1_PY, tau1_DP, tau1_bet, tau1_skin)
+type <- c("PY", "DP", "B", "S", "C")
+estimates <- c(tau1_PY, tau1_DP, tau1_bet, tau1_skin, tau1_cam)
 df <- data.frame(
   type = factor(type, levels = type[order(estimates)]), estim = estimates,
-  lower_CI = c(PY_lower, DP_lower, NA, NA), upper_CI = c(PY_upper, DP_upper, NA, NA)
+  lower_CI = c(PY_lower, DP_lower, NA, NA, NA), upper_CI = c(PY_upper, DP_upper, NA, NA, NA)
 )
 
-p1 <- ggplot(df, aes(type, estim)) + scale_x_discrete(limits=c('B', 'DP', 'PY', 'S'))
+p1 <- ggplot(df, aes(type, estim)) + scale_x_discrete(limits=c('B', 'DP', 'PY', 'S', 'C'))
 p1 <- p1 + geom_pointrange(aes(ymin = lower_CI, ymax = upper_CI)) + theme_bw() +
-  theme(legend.position = "none") + xlab("") + ylab(expression(tau[1])) + ggtitle(paste("10 % sample")) +
+  theme(legend.position = "none") + xlab("") + ylab(expression(tau[1])) + ggtitle(paste("10%")) +
   theme(plot.title = element_text(hjust = 0.5, size=30)) + geom_hline(yintercept = dataset$true_tau1, linetype = "dotted")
 p1
 
-library(ggpubr)
+# Figure 2 in the paper
 p_together <- ggarrange(p, p1, ncol=2) + scale_fill_grey()
-ggsave(p_together, height=5, width=4*2.5, file="ipmus.png", device="png")
 ggsave(p_together, height=5, width=4*2.5, file="ipmus.eps", device="eps")

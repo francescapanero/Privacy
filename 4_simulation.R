@@ -173,15 +173,17 @@ p + geom_pointrange(aes(ymin = lower_CI, ymax = upper_CI)) +
   theme_bw() + theme(plot.title = element_text(hjust = 0.5)) + geom_hline(yintercept = dataset$true_tau1) + 
   scale_y_log10()
 
-
-# Compare different Zipf parameters
+# -----------------------------------
+# Upper part of Table 1 + Table 2:
+# Compare estimation of PY, DP, B, S, C on different Zipf datasets
+# -----------------------------------
 
 N <- 1000000L # Important to us L, otherwise is not recognized as integer
 n <- 100000L
 p <- list()
 check <- list()
 true_tau1 = m1 <- c()
-tau1_bet = tau1_skin = tau1_PY = tau1_DP <- c()
+tau1_bet = tau1_skin = tau1_PY = tau1_DP = tau1_cam <- c()
 PY_lower = PY_upper = DP_lower = DP_upper <- c()
 theta_MLE_PY = alpha_MLE_PY = theta_MLE_DP <- c()
 zipf_param_list <- c(1.25, 1.5, 1.75, 2)
@@ -221,18 +223,19 @@ for (i in 1:length(zipf_param_list)) {
   kable(tab, digits = 0)
   check[[i]] <- frequency_check_PY(dataset$frequencies)
   
-  # Bethlehem and Skinner estimators
+  # Bethlehem and Skinner and Camerlenghi estimators
   estim <- tau1_bs(dataset$frequencies, dataset$N)
   tau1_bet[i] <- estim[1]
   tau1_skin[i] <- estim[2]
+  tau1_cam[i] <- tau1_np_pois(dataset$N, dataset$n, dataset$frequencies)
 
   # Plot estimates and confidence intervals
-  type <- c("PY", "DP", "B", "S")
-  estimates <- c(tau1_PY[i], tau1_DP[i], tau1_bet[i], tau1_skin[i])
+  type <- c("PY", "DP", "B", "S", "C")
+  estimates <- c(tau1_PY[i], tau1_DP[i], tau1_bet[i], tau1_skin[i], tau1_cam[i])
   df <- data.frame(
     type = factor(type), estim = estimates,
-    lower_CI = c(PY_lower[i], DP_lower[i], NA, NA),
-    upper_CI = c(PY_upper[i], DP_upper[i], NA, NA)
+    lower_CI = c(PY_lower[i], DP_lower[i], NA, NA, NA),
+    upper_CI = c(PY_upper[i], DP_upper[i], NA, NA, NA)
   )
   p[[i]] <- ggplot(df, aes(type, estim))
   p[[i]] <- p[[i]] + geom_pointrange(aes(ymin = lower_CI, ymax = upper_CI)) + theme_bw() +
@@ -246,21 +249,22 @@ for (i in 1:length(zipf_param_list)) {
 a <- do.call(grid.arrange, c(p, ncol = 4))
 ggsave(a, file = "zipf.eps", height = 5, width = 7 * 2.5, device = "eps")
 
-# Summary tables
-
+# Summary tables:
+# - Upper part of Table 1
 df_zipf <- data.frame(
   D = round(zipf_param_list, 2),
-  C = m1, E = true_tau1, H = paste(as.integer(tau1_PY), " in [", round(PY_lower, 0), ", ", round(PY_upper, 0), "]", sep = ""),
-  L = paste(as.integer(tau1_DP), " in [", round(DP_lower, 0), ", ", round(DP_upper, 0), "]", sep = ""),
-  M = as.integer(tau1_bet), N = as.integer(tau1_skin)
+  C = m1, E = true_tau1, H = paste(as.integer(tau1_PY), " [", round(PY_lower, 0), ", ", round(PY_upper, 0), "]", sep = ""),
+  L = paste(as.integer(tau1_DP), " [", round(DP_lower, 0), ", ", round(DP_upper, 0), "]", sep = ""),
+  M = as.integer(tau1_bet), N = as.integer(tau1_skin), P=as.integer(tau1_cam)
 )
 colnames(df_zipf) <- c(
   "Zipf parameter", "m_1", "tau_1", "Pitman-Yor",
-  "Dirichlet Process", "Bethlehem", "Skinner"
+  "Dirichlet Process", "Bethlehem", "Skinner", "Camerlenghi"
 )
 knitr::kable(df_zipf)
 xtable(df_zipf)
 
+# - Table 2
 df_zipf_param <- data.frame(
   A = round(zipf_param_list, 2)[1:2], O = round(theta_MLE_PY[1:2], 2), P = round(alpha_MLE_PY[1:2], 2), Q = round(theta_MLE_DP[1:2], 2),
   A = round(zipf_param_list, 2)[3:4], O = round(theta_MLE_PY[3:4], 2), P = round(alpha_MLE_PY[3:4], 2), Q = round(theta_MLE_DP[3:4], 2)
@@ -346,14 +350,18 @@ p <- ggplot(df, aes(type, estim, color = type))
 p + geom_pointrange(aes(ymin = lower_CI, ymax = upper_CI)) + theme_bw() +
   theme(legend.position = "none") + xlab("") + ylab(expression(tau[1])) + ggtitle(paste0("Geometric parameter: ", round(prob, 6))) + theme(plot.title = element_text(hjust = 0.5)) + geom_hline(yintercept = dataset$true_tau1, linetype = "dotted")
 
-# plot together
+# -----------------------------------
+# Lower part of Table 1:
+# Compare estimation of PY, DP, B, S, C on different Geometric datasets
+# -----------------------------------
+
 N <- 1000000L # Important to us L, otherwise is not recognized as integer
 n <- 100000L
 
 check <- list()
 p_g <- list()
 true_tau1_g = m1_g <- c()
-tau1_bet_g = tau1_skin_g = tau1_PY_g = tau1_DP_g <- c()
+tau1_bet_g = tau1_skin_g = tau1_PY_g = tau1_DP_g = tau1_cam_g <- c()
 PY_lower_g = PY_upper_g = DP_lower_g = DP_upper_g <- c()
 theta_MLE_PY_g = alpha_MLE_PY_g = theta_MLE_DP_g <- c()
 p_g <- list()
@@ -394,18 +402,19 @@ for (i in 1:length(geom_param_list)) {
   DP_upper_g[i] <- qhyper2(1 - 0.01 / 2, out_DP$par[1] + dataset$n - 1, dataset$N - dataset$n, dataset$m1)
   theta_MLE_DP_g[i] <- out_DP$par
   
-  # Bethlehem and Skinner estimators
+  # Bethlehem and Skinner and Camerlenghi estimators
   estim <- tau1_bs(dataset$frequencies, dataset$N)
   tau1_bet_g[i] <- estim[1]
   tau1_skin_g[i] <- estim[2]
+  tau1_cam_g[i] <- tau1_np_pois(dataset$N, dataset$n, dataset$frequencies)
   
   # Plot estimates and confidence intervals
-  type <- c("PY", "DP", "B", "S")
-  estimates <- c(tau1_PY_g[i], tau1_DP_g[i], tau1_bet_g[i], tau1_skin_g[i])
+  type <- c("PY", "DP", "B", "S", "C")
+  estimates <- c(tau1_PY_g[i], tau1_DP_g[i], tau1_bet_g[i], tau1_skin_g[i], tau1_cam_g[i])
   df <- data.frame(
     type = factor(type), estim = estimates,
-    lower_CI = c(PY_lower_g[i], DP_lower_g[i], NA, NA),
-    upper_CI = c(PY_upper_g[i], DP_upper_g[i], NA, NA)
+    lower_CI = c(PY_lower_g[i], DP_lower_g[i], NA, NA, NA),
+    upper_CI = c(PY_upper_g[i], DP_upper_g[i], NA, NA, NA)
   )
   p_g[[i]] <- ggplot(df, aes(type, estim))
   p_g[[i]] <- p_g[[i]] + geom_pointrange(aes(ymin = lower_CI, ymax = upper_CI)) + theme_bw() +
@@ -419,20 +428,22 @@ b <- do.call(grid.arrange, c(p_g, ncol = 2))
 ggsave(b, file = "geom.eps", height = 5, width = 7 * 2.5, device = "eps")
 
 # Summary tables
+# - Lower part of Table 1
 df_geom <- data.frame(
   D = geom_param_list,
   C = m1_g, E = true_tau1_g,
   H = paste(as.integer(tau1_PY_g), " in [", round(PY_lower_g, 0), ", ", round(PY_upper_g, 0), "]", sep = ""),
   L = paste( as.integer(tau1_DP_g), " in [", round(DP_lower_g, 0), ", ", round(DP_upper_g, 0), "]", sep = ""),
-  M = as.integer(tau1_bet_g), N = as.integer(tau1_skin_g)
+  M = as.integer(tau1_bet_g), N = as.integer(tau1_skin_g), P = as.integer(tau1_cam_g)
 )
 colnames(df_geom) <- c(
   "Geometric parameter", "m_1", "tau_1", "Pitman-Yor",
-  "Dirichlet Process", "Bethlehem", "Skinner"
+  "Dirichlet Process", "Bethlehem", "Skinner", "Camerlenghi"
 )
 knitr::kable(df_geom)
 xtable(df_geom)
 
+# - Table of estimated prior parameters of PY and DP (not showed in the paper)
 df_geom_param <- data.frame(
   A = geom_param_list, O = round(theta_MLE_PY_g, 2), P = round(alpha_MLE_PY_g, 2), Q = round(theta_MLE_DP_g, 2)
 )
@@ -444,7 +455,7 @@ xtable(df_geom_param)
 
 
 # -------------------------------------------
-# Scenario 3 - Custom probabilities
+# Scenario 3 - Custom probabilities (not in the paper)
 # -------------------------------------------
 
 N <- 1000000L # Important to us L, otherwise is not recognized as integer
@@ -534,3 +545,59 @@ p <- p + geom_pointrange(aes(ymin = lower_CI, ymax = upper_CI), size = 1.2) + th
   theme(plot.title = element_text(hjust = 0.5)) + geom_hline(yintercept = dataset$true_tau1, linetype = "dotted")
 p
 ggsave(p, height = 5, width = 7 * 2.5, file = "custom.eps", device = "eps")
+
+
+# -------------------------
+# Figure 1 in the paper: comparison of B, S, C and DP on Zipf data
+# -------------------------
+
+N <- 1000000L # Important to us L, otherwise is not recognized as integer
+n <- 100000L
+p <- list()
+check <- list()
+true_tau1 = m1 <- c()
+tau1_bet = tau1_skin = tau1_DP = tau1_cam <- c()
+PY_lower = PY_upper = DP_lower = DP_upper <- c()
+theta_MLE_PY = alpha_MLE_PY = theta_MLE_DP <- c()
+zipf_param_list <- c(1.5, 1.75, 2)
+for (i in 1:length(zipf_param_list)) {
+  zipf_param <- zipf_param_list[i]
+  set.seed(123)
+  dataset <- dataset_creation_zipf(n = n, zipf_param = zipf_param, N = N)
+  K_n <- dataset$K_n
+  true_tau1[i] <- dataset$true_tau1
+  m1[i] <- dataset$m1
+  
+  # Dirichlet process estimation
+  out_DP <- max_EPPF_DP(dataset$frequencies)
+  tau1_DP[i] <- tau1_dp(dataset$m1, dataset$n, out_DP$par[1], dataset$N)
+  DP_lower[i] <- qhyper2(0.01 / 2, out_DP$par[1] + dataset$n - 1, dataset$N - dataset$n, dataset$m1)
+  DP_upper[i] <- qhyper2(1 - 0.01 / 2, out_DP$par[1] + dataset$n - 1, dataset$N - dataset$n, dataset$m1)
+  theta_MLE_DP[i] <- out_DP$par
+  
+  # Bethlehem and Skinner and Camerlenghi estimators
+  estim <- tau1_bs(dataset$frequencies, dataset$N)
+  tau1_bet[i] <- estim[1]
+  tau1_skin[i] <- estim[2]
+  tau1_cam[i] <- tau1_np_pois(dataset$N, dataset$n, dataset$frequencies)
+  
+  # Plot estimates and confidence intervals
+  type <- c("DP", "B", "S", "C")
+  estimates <- c(tau1_DP[i], tau1_bet[i], tau1_skin[i], tau1_cam[i])
+  df <- data.frame(
+    type = factor(type), estim = estimates,
+    lower_CI = c(DP_lower[i], NA, NA, NA),
+    upper_CI = c(DP_upper[i], NA, NA, NA)
+  )
+  p[[i]] <- ggplot(df, aes(type, estim))
+  p[[i]] <- p[[i]] + geom_pointrange(aes(ymin = lower_CI, ymax = upper_CI)) + theme_bw() +
+    theme(legend.position = "none") + xlab("") + ylab(expression(tau[1])) + 
+    ggtitle(paste0("Zipf ", round(zipf_param, 2))) + 
+    theme(plot.title = element_text(hjust = 0.5, size=30)) + 
+    geom_hline(yintercept = dataset$true_tau1, linetype = "dotted")
+}
+
+# plot estimates
+a <- do.call(grid.arrange, c(p, ncol = 3))
+ggsave(a, file = "zipf_fig1.eps", height = 5, width = 7 * 2.5, device = "eps")
+
