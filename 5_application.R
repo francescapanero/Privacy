@@ -1,9 +1,5 @@
-
 library(tidyverse)
-library(dplyr)
-library(knitr)
 library(ggpubr)
-library(gridExtra)
 
 rm(list = ls())
 
@@ -36,6 +32,8 @@ tab <- rbind(
 
 colnames(tab) <- 1:15
 kable(tab, digits = 0)
+
+
 p_check <- frequency_check_PY(dataset$frequencies)
 p_check <- p_check + ggtitle(paste("5%")) + theme(plot.title = element_text(hjust = 0.5, size = 30))
 p_check

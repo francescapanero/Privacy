@@ -129,12 +129,8 @@ for (i in 1:N_param) {
 
 knitr::kable(results)
 
-# Table 1
+# Upper part of Table 1
 # xtable(results[,1:8])
-
-# Table 2
-# xtable(t(results[,c(1, 9:10)]))
-
 
 # Lower part of Table 1: ----------------------------------------------
 # Compare estimation of PY, DP, B, S, C on different Geometric datasets
@@ -153,8 +149,8 @@ results <- NULL
 # Performing the simulation
 for (i in 1:N_param) {
   
-  # Setting the seed of the Python code
-  random$seed(0L)
+  # Setting the seed of the R code
+  set.seed(123)
   
   # Simulating the dataset from a Zipf law
   dataset <- dataset_creation_geom(n = n, N = N, p = geom_params[i])  
@@ -186,7 +182,7 @@ for (i in 1:N_param) {
   tau1_cam <- tau1_np_pois(dataset$N, dataset$n, dataset$frequencies)
   
   df <- data.frame(
-    Zipf = zipf_params[i],
+    Geom = geom_params[i],
     m1 = m1,
     tau1 = true_tau1,
     PY = paste(round(tau1_PY), " [", round(PY_lower), ", ", round(PY_upper), "]", sep = ""),
@@ -202,9 +198,6 @@ for (i in 1:N_param) {
 
 knitr::kable(results)
 
-# Table 1
+# Lower part of Table 1
 # xtable(results[,1:8])
-
-# Table 2
-# xtable(t(results[,c(1, 9:10)]))
 
