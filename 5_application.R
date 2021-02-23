@@ -65,7 +65,7 @@ p_check_tog[[1]] <- p_check
 p_check_tog[[2]] <- p1_check
 a <- do.call(grid.arrange, c(p_check_tog, ncol = 2))
 
-ggsave(a, height = 3, width = 8, file = "img/check.eps", device=cairo_ps)
+ggsave(a, height = 3, width = 8, file = "img/check.eps", device="eps")
 
 # Model estimation ----------------------------------------
 

@@ -148,9 +148,11 @@ expected_m_py <- Vectorize(expected_m_py, vectorize.args = "m")
 
 frequency_check_PY <- function(frequencies) {
   n <- sum(frequencies)
+  fit_DP <- max_EPPF_DP(frequencies)
   fit_PY <- max_EPPF_PY(frequencies)
   theta <- fit_PY$par[1]
   alpha <- fit_PY$par[2]
+  theta_DP <- fit_DP$par
 
 
   M_l <- as.numeric(table(factor(frequencies, levels = 1:n)))
@@ -158,10 +160,14 @@ frequency_check_PY <- function(frequencies) {
 
   idx <- 1:(which.min(M_l) - 1) # which(P_l > 0)
 
-  data_plot <- data.frame(Size = idx, M_l = M_l[idx], Theoretical = expected_m_py(idx, n = n, alpha = alpha, theta = theta))
+  data_plot <- data.frame(Size = idx, M_l = M_l[idx], 
+                          Theoretical_PY = expected_m_py(idx, n = n, alpha = alpha, theta = theta),
+                          Theoretical_DP = expected_m_dp(idx, n = n, theta = theta_DP))
+  
   p <- ggplot(data = data_plot, aes(x = Size, y = M_l)) +
-    geom_point(alpha=0.8, size=1) +
-    geom_line(aes(y = Theoretical), color = "black", linetype = "dashed") +
+    geom_point(size=0.8) +
+    geom_line(aes(y = Theoretical_PY), color = "black") +
+    geom_line(aes(y = Theoretical_DP), color = "black", linetype = "dotted") +
     scale_y_log10() +
     scale_x_log10() +
     theme_bw() +
