@@ -9,7 +9,7 @@ Rcpp::sourceCpp("3_cluster_py.cpp")
 # Alternative implementation of rhyper, but we allow m to be a real number
 qhyper2 <- function(p, m, n, k) {
   x <- 0:k
-  lprobs <- lchoose(m, x) + lchoose(n, k - x) - lchoose(m + n, k) #choose(m, x) choose(n, k-x) / choose(m+n, k)
+  lprobs <- lchoose(m, x) + lchoose(n, k - x) - lchoose(m + n, k) # choose(m, x) choose(n, k-x) / choose(m+n, k)
   lprobs <- lprobs
   probs <- exp(lprobs)
   cdf <- cumsum(probs)
@@ -17,12 +17,12 @@ qhyper2 <- function(p, m, n, k) {
 }
 
 # Alternative implementation of rhyper, but we allow m to be a real number
-rhyper2 <- function(nn, m, n, k){
+rhyper2 <- function(nn, m, n, k) {
   x <- 0:k
-  lprobs <- lchoose(m, x) + lchoose(n, k - x) - lchoose(m + n, k) #choose(m, x) choose(n, k-x) / choose(m+n, k)
+  lprobs <- lchoose(m, x) + lchoose(n, k - x) - lchoose(m + n, k) # choose(m, x) choose(n, k-x) / choose(m+n, k)
   lprobs <- lprobs - max(lprobs)
   probs <- exp(lprobs)
-  sample(x, nn, replace=TRUE, prob=probs)
+  sample(x, nn, replace = TRUE, prob = probs)
 }
 
 logEPPF_PY <- function(theta, alpha, frequencies) {
@@ -215,37 +215,42 @@ mle_negbin <- function(x) {
   return(c)
 }
 
-g_i <- function(i, lambda, pois_param, m){
-  if(m[i+1] != 0)  return((-1)^i * exp(log(i+1) + i * log(lambda) + log(ppois(i-1, pois_param, lower.tail=FALSE)) + log(m[i+1])))
-  else  return(0)
+g_i <- function(i, lambda, pois_param, m) {
+  if (m[i + 1] != 0) {
+    return((-1)^i * exp(log(i + 1) + i * log(lambda) + log(ppois(i - 1, pois_param, lower.tail = FALSE)) + log(m[i + 1])))
+  } else {
+    return(0)
+  }
 }
 
-tau1_np_pois <- function(N, n, freq){
-  lambda = (N - n) / n
+tau1_np_pois <- function(N, n, freq) {
+  lambda <- (N - n) / n
   m <- rep(0, n)
-  a = data.frame(freq) %>% group_by(freq) %>% summarise(count=n())
-  for(j in 1:n){
-    if(j %in% a$freq) m[j] = a$count[match(j ,a$freq)]
+  a <- data.frame(freq) %>%
+    group_by(freq) %>%
+    summarise(count = n())
+  for (j in 1:n) {
+    if (j %in% a$freq) m[j] <- a$count[match(j, a$freq)]
   }
-  ind_max = tail(which(m!=0), 1)
-  pois_param <- log(n / (2*lambda-1)) / (4*lambda)
-  ind = c(0:(ind_max-1))
-  b = sapply(ind, g_i, pois_param=pois_param, lambda=lambda, m=m)
+  ind_max <- tail(which(m != 0), 1)
+  pois_param <- log(n / (2 * lambda - 1)) / (4 * lambda)
+  ind <- c(0:(ind_max - 1))
+  b <- sapply(ind, g_i, pois_param = pois_param, lambda = lambda, m = m)
   return(sum(b))
 }
 
-f_i <- function(alpha, i, cumsum){
-  return(alpha / (i-alpha) * rev(cumsum_m)[i+1])
+f_i <- function(alpha, i, cumsum) {
+  return(alpha / (i - alpha) * rev(cumsum_m)[i + 1])
 }
 
-f_alpha <- function(alpha, ind_max, cumsum_m, K_n){
-  ind = c(1:(ind_max-1))
-  a = sapply(ind, f_i, alpha=alpha, cumsum=cumsum_m)
-  a = sum(a)- K_n
+f_alpha <- function(alpha, ind_max, cumsum_m, K_n) {
+  ind <- c(1:(ind_max - 1))
+  a <- sapply(ind, f_i, alpha = alpha, cumsum = cumsum_m)
+  a <- sum(a) - K_n
   return(a)
 }
 
-PY_alpha <- function(freq, ind_max, cumsum_m, K_n){
-  a = uniroot(f_alpha, c(0,1), ind_max=ind_max, cumsum_m=cumsum_m, K_n=K_n)
+PY_alpha <- function(freq, ind_max, cumsum_m, K_n) {
+  a <- uniroot(f_alpha, c(0, 1), ind_max = ind_max, cumsum_m = cumsum_m, K_n = K_n)
   return(a$root)
 }
