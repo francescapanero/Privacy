@@ -160,13 +160,13 @@ frequency_check_PY <- function(frequencies) {
 
   data_plot <- data.frame(Size = idx, M_l = M_l[idx], Theoretical = expected_m_py(idx, n = n, alpha = alpha, theta = theta))
   p <- ggplot(data = data_plot, aes(x = Size, y = M_l)) +
-    geom_point() +
+    geom_point(alpha=0.8, size=1) +
     geom_line(aes(y = Theoretical), color = "black", linetype = "dashed") +
     scale_y_log10() +
     scale_x_log10() +
     theme_bw() +
     xlab("r") +
-    ylab(expression(M[r]))
+    ylab(expression(m[r]))
   p
 }
 

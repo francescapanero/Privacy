@@ -6,19 +6,15 @@ rm(list = ls())
 load("data/IPMUS.RData")
 source("2_functions.R")
 
-# -------------------------------
-# 5% dataset
-# -------------------------------
+data_list <- list(data_5perc, data_10perc)
 
-dataset <- data_5perc
+# MODEL CHECKING
 
-# MODEL CHECKING ---------------
+## 5% case -------------------------------
 
+dataset <- data_list[[1]]
 out_PY <- max_EPPF_PY(dataset$frequencies)
 out_DP <- max_EPPF_DP(dataset$frequencies)
-
-# Comparison between M_l and the asymptotic formula
-# frequency_check_PY(dataset$frequencies)
 
 # Comparison between M_l and the expected values
 M_l <- as.numeric(table(factor(dataset$frequencies, levels = 1:dataset$n)))
@@ -34,103 +30,15 @@ colnames(tab) <- 1:10
 kable(tab, digits = 0)
 xtable(tab, digits=0)
 
-
 p_check <- frequency_check_PY(dataset$frequencies)
 p_check <- p_check + ggtitle(paste("Dataset percentage: 5%")) + theme(plot.title = element_text(hjust = 0.5, size = 10))
 p_check
 
-# ggsave(p_check, height = 5, width = 4 * 2.5, file = "check_5.eps", device = "eps")
+## 10% case -----------------------------------
 
-
-# ---------------------------
-# PY estimation
-# ---------------------------
-
-alpha <- 0.01 # Credible intervals percentage
-
-out_PY <- max_EPPF_PY(dataset$frequencies)
-tau1_PY <- tau1_py(dataset$m1, dataset$n, out_PY$par[1], out_PY$par[2], dataset$N)
-PY_sim <- tau1_py_sim(dataset$frequencies, out_PY$par[1], out_PY$par[2], dataset$N)
-
-PY_lower <- quantile(PY_sim, alpha / 2)
-PY_upper <- quantile(PY_sim, 1 - alpha / 2)
-
-# Dirichlet process estimation
-out_DP <- max_EPPF_DP(dataset$frequencies)
-tau1_DP <- tau1_dp(dataset$m1, dataset$n, out_DP$par[1], dataset$N)
-DP_lower <- qhyper2(alpha / 2, out_DP$par[1] + dataset$n - 1, dataset$N - dataset$n, dataset$m1)
-DP_upper <- qhyper2(1 - alpha / 2, out_DP$par[1] + dataset$n - 1, dataset$N - dataset$n, dataset$m1)
-
-# Bethlehem and Skinner estimators
-estim <- tau1_bs(dataset$frequencies, dataset$N)
-tau1_bet <- estim[1]
-tau1_skin <- estim[2]
-tau1_cam <- tau1_np_pois(dataset$N, dataset$n, dataset$frequencies)
-
-# Summary
-kable(data.frame(
-  n = dataset$n, N = dataset$N, percentage = round(dataset$percentage, 2),
-  m1 = dataset$m1,
-  K_n = dataset$K_n,
-  true_tau1 = dataset$true_tau1,
-  tau1_py = tau1_PY, CI_PY = paste("[", PY_lower, ", ", PY_upper, "]", sep = ""),
-  tau1_dp = tau1_DP, CI_DP = paste("[", DP_lower, ", ", DP_upper, "]", sep = ""),
-  tau1_bet = tau1_bet, tau1_skin = tau1_skin, tau1_cam = tau1_cam
-))
-
-
-# Summary rounded
-result <- data.frame(
-  N = dataset$N,
-  percentage = round(dataset$percentage * 100, 2),
-  m1 = dataset$m1,
-  K_n = dataset$K_n,
-  true_tau1 = dataset$true_tau1,
-  tau1_py = round(tau1_PY, 0), CI_PY = paste("[", round(PY_lower, 0), ", ", round(PY_upper, 0), "]", sep = ""),
-  tau1_dp = round(tau1_DP, 0), CI_DP = paste("[", round(DP_lower, 0), ", ", round(DP_upper, 0), "]", sep = ""),
-  tau1_bet = round(tau1_bet, 0), tau1_skin = round(tau1_skin, 0), tau1_cam = round(tau1_cam, 0)
-)
-
-# change col names
-result %>%
-  kable(., col.names = c("N", "% sample", "# classes", "# sample uniques", "tau_1 true", "PY", "CI PY", "DP", "CI DP", "Bethelehem", "Skinner", "Camerlenghi"))
-
-# Latex table
-result %>%
-  kable(., "latex",
-    escape = F, booktabs = T, linesep = "", align = "c",
-    col.names = c("N", "$\\%$ sample", "$\\#$ classes", "# sample uniques", "$\\tau_1$ true", "PY", "CI PY", "DP", "CI DP", "Bethelehem", "Skinner", "Camerlenghi")
-  )
-
-# Plot estimates and confidence intervals
-type <- c("PY", "DP", "B", "S", "C")
-estimates <- c(tau1_PY, tau1_DP, tau1_bet, tau1_skin, tau1_cam)
-df <- data.frame(
-  type = factor(type, levels = type[order(estimates)]), estim = estimates,
-  lower_CI = c(PY_lower, DP_lower, NA, NA, NA), upper_CI = c(PY_upper, DP_upper, NA, NA, NA)
-)
-
-p <- ggplot(df, aes(type, estim)) +
-  scale_x_discrete(limits = c("B", "DP", "PY", "S", "C"))
-p <- p + geom_pointrange(aes(ymin = lower_CI, ymax = upper_CI)) + theme_bw() +
-  theme(legend.position = "none") + xlab("") + ylab(expression(tau[1])) + ggtitle(paste("5%")) +
-  theme(plot.title = element_text(hjust = 0.5, size = 30)) + geom_hline(yintercept = dataset$true_tau1, linetype = "dotted")
-p
-ggsave(p, file = "img/5perc.eps", device = "eps")
-
-# -------------------------------
-# 10% dataset
-# -------------------------------
-
-dataset <- data_10perc
-
-# MODEL CHECKING ---------------
-
+dataset <- data_list[[2]]
 out_PY <- max_EPPF_PY(dataset$frequencies)
 out_DP <- max_EPPF_DP(dataset$frequencies)
-
-# Comparison between M_l and the asymptotic formula
-# frequency_check_PY(dataset$frequencies)
 
 # Comparison between M_l and the expected values
 M_l <- as.numeric(table(factor(dataset$frequencies, levels = 1:dataset$n)))
@@ -149,7 +57,7 @@ xtable(tab, digits=0)
 p1_check <- frequency_check_PY(dataset$frequencies)
 p1_check <- p1_check + ggtitle(paste("Dataset percentage: 10%")) + theme(plot.title = element_text(hjust = 0.5, size = 10))
 p1_check
-# ggsave(p1_check, height = 5, width = 4 * 2.5, file = "img/check_10.eps", device = "eps")
+
 
 # Figure 3 in the paper
 p_check_tog <- list()
@@ -157,84 +65,66 @@ p_check_tog[[1]] <- p_check
 p_check_tog[[2]] <- p1_check
 a <- do.call(grid.arrange, c(p_check_tog, ncol = 2))
 
-ggsave(a, height = 4, width = 10, file = "img/check.eps", device = "eps")
+ggsave(a, height = 3, width = 8, file = "img/check.eps", device=cairo_ps)
 
-# ---------------------------
-# PY estimation
-# ---------------------------
+# Model estimation ----------------------------------------
 
-alpha <- 0.01 # Credible intervals percentage
+# Initialization of the relevant quantities
+Method <- c("Sam.", "Beth.", "Sk.", "Cam.", "Pitman-Yor")
+N_param <- 2
+N_method <- length(Method)
 
-out_PY <- max_EPPF_PY(dataset$frequencies)
-tau1_PY <- tau1_py(dataset$m1, dataset$n, out_PY$par[1], out_PY$par[2], dataset$N)
-PY_sim <- tau1_py_sim(dataset$frequencies, out_PY$par[1], out_PY$par[2], dataset$N)
+# Results
+results <- NULL
 
-PY_lower <- quantile(PY_sim, alpha / 2)
-PY_upper <- quantile(PY_sim, 1 - alpha / 2)
+# Performing the simulation
+for (i in 1:N_param) {
 
-# Dirichlet process estimation
-out_DP <- max_EPPF_DP(dataset$frequencies)
-tau1_DP <- tau1_dp(dataset$m1, dataset$n, out_DP$par[1], dataset$N)
-DP_lower <- qhyper2(alpha / 2, out_DP$par[1] + dataset$n - 1, dataset$N - dataset$n, dataset$m1)
-DP_upper <- qhyper2(1 - alpha / 2, out_DP$par[1] + dataset$n - 1, dataset$N - dataset$n, dataset$m1)
-
-# Bethlehem and Skinner estimators
-estim <- tau1_bs(dataset$frequencies, dataset$N)
-tau1_bet <- estim[1]
-tau1_skin <- estim[2]
-tau1_cam <- tau1_np_pois(dataset$N, dataset$n, dataset$frequencies)
-
-# Summary
-kable(data.frame(
-  n = dataset$n, N = dataset$N, percentage = round(dataset$percentage, 2),
-  m1 = dataset$m1,
-  K_n = dataset$K_n,
-  true_tau1 = dataset$true_tau1,
-  tau1_py = tau1_PY, CI_PY = paste("[", PY_lower, ", ", PY_upper, "]", sep = ""),
-  tau1_dp = tau1_DP, CI_DP = paste("[", DP_lower, ", ", DP_upper, "]", sep = "")
-))
-
-# Summary rounded
-result <- data.frame(
-  N = dataset$N,
-  percentage = round(dataset$percentage * 100, 2),
-  m1 = dataset$m1,
-  K_n = dataset$K_n,
-  true_tau1 = dataset$true_tau1,
-  tau1_py = round(tau1_PY, 0), CI_PY = paste("[", round(PY_lower, 0), ", ", round(PY_upper, 0), "]", sep = ""),
-  tau1_dp = round(tau1_DP, 0), CI_DP = paste("[", round(DP_lower, 0), ", ", round(DP_upper, 0), "]", sep = ""),
-  tau1_bet = round(tau1_bet, 0), tau1_skin = round(tau1_skin, 0), tau1_cam = round(tau1_cam, 0)
-)
-
-# change col names
-result %>%
-  kable(., col.names = c("N", "% sample", "# classes", "# sample uniques", "tau_1 true", "PY", "CI PY", "DP", "CI DP", "Bethelehem", "Skinner", "Camerlenghi"))
-
-# Latex table
-result %>%
-  kable(., "latex",
-    escape = F, booktabs = T, linesep = "", align = "c",
-    col.names = c("N", "$\\%$ sample", "$\\#$ classes", "# sample uniques", "$\\tau_1$ true", "PY", "CI PY", "DP", "CI DP", "Bethelehem", "Skinner", "Camerlenghi")
+  # Simulating the dataset from a Zipf law
+  dataset <- data_list[[i]]
+  n <- dataset$n
+  N <- dataset$N
+  K_n <- dataset$K_n
+  true_tau1 <- dataset$true_tau1
+  m1 <- dataset$m1
+  
+  set.seed(123)  # Select the appropriate seed
+  # PY estimation
+  out_PY <- max_EPPF_PY(dataset$frequencies)
+  tau1_PY <- tau1_py(dataset$m1, dataset$n, out_PY$par[1], out_PY$par[2], dataset$N)
+  PY_sim <- tau1_py_sim(dataset$frequencies, out_PY$par[1], out_PY$par[2], dataset$N)
+  PY_lower <- quantile(PY_sim, 0.01 / 2)
+  PY_upper <- quantile(PY_sim, 1 - 0.01 / 2)
+  theta_MLE_PY <- out_PY$par[1]
+  alpha_MLE_PY <- out_PY$par[2]
+  
+  # Dirichlet process estimation
+  out_DP <- max_EPPF_DP(dataset$frequencies)
+  tau1_DP <- tau1_dp(dataset$m1, dataset$n, out_DP$par[1], dataset$N)
+  DP_lower <- qhyper2(0.01 / 2, out_DP$par[1] + dataset$n - 1, dataset$N - dataset$n, dataset$m1)
+  DP_upper <- qhyper2(1 - 0.01 / 2, out_DP$par[1] + dataset$n - 1, dataset$N - dataset$n, dataset$m1)
+  theta_MLE_DP <- out_DP$par
+  
+  # Bethlehem and Skinner and Camerlenghi estimators
+  estim <- tau1_bs(dataset$frequencies, dataset$N)
+  tau1_bet <- estim[1]
+  tau1_skin <- estim[2]
+  tau1_cam <- tau1_np_pois(dataset$N, dataset$n, dataset$frequencies)
+  
+  df <- data.frame(
+    n = n,
+    m1 = m1,
+    tau1 = true_tau1,
+    PY = paste(round(tau1_PY), " [", round(PY_lower), ", ", round(PY_upper), "]", sep = ""),
+    Sam = paste(round(tau1_DP), " [", round(DP_lower), ", ", round(DP_upper), "]", sep = ""),
+    Beth = round(tau1_bet), 
+    Sk = round(tau1_skin), 
+    Cam = round(tau1_cam),
+    alpha_hat = round(alpha_MLE_PY,2),
+    theta_hat = round(theta_MLE_PY,2)
   )
+  results <- rbind(results, df)
+}
 
-# Plot estimates and confidence intervals
-type <- c("PY", "DP", "B", "S", "C")
-estimates <- c(tau1_PY, tau1_DP, tau1_bet, tau1_skin, tau1_cam)
-df <- data.frame(
-  type = factor(type, levels = type[order(estimates)]), estim = estimates,
-  lower_CI = c(PY_lower, DP_lower, NA, NA, NA), upper_CI = c(PY_upper, DP_upper, NA, NA, NA)
-)
-
-p1 <- ggplot(df, aes(type, estim)) +
-  scale_x_discrete(limits = c("B", "DP", "PY", "S", "C"))
-p1 <- p1 + geom_pointrange(aes(ymin = lower_CI, ymax = upper_CI)) + theme_bw() +
-  theme(legend.position = "none") + xlab("") + ylab(expression(tau[1])) + ggtitle(paste("10%")) +
-  theme(plot.title = element_text(hjust = 0.5, size = 30)) + geom_hline(yintercept = dataset$true_tau1, linetype = "dotted")
-p1
-
-# Figure 2 in the paper
-p_together <- list()
-p_together[[1]] <- p
-p_together[[2]] <- p1
-b <- do.call(grid.arrange, c(p_together, ncol = 2))
-ggsave(b, height = 5, width = 4 * 2.5, file = "ipmus", device = "eps")
+knitr::kable(results)
+xtable(results[,1:8])
