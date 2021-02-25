@@ -129,6 +129,8 @@ for (i in 1:N_param) {
 
 knitr::kable(results)
 
+results[,9:10]
+
 # Upper part of Table 1
 # xtable(results[,1:8])
 
