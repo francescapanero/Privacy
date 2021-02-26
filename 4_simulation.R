@@ -9,7 +9,7 @@ n <- 100000L
 
 # Initialization of the relevant quantities
 zipf_params <- c(1.5, 1.75, 2)
-Method <- c("Sam.", "Beth.", "Sk.", "Cam.")
+Method <- c("NB", "PB-1", "PB-2", "NEB")
 N_param <- length(zipf_params)
 N_method <- length(Method)
   
@@ -54,7 +54,7 @@ for (i in 1:N_param) {
   results <- rbind(results, df)
 }
 
-results$Zipf <- paste("Zipf parameter:", results$Zipf)
+results$Zipf <- paste("Power-law parameter:", results$Zipf)
 
 p <- ggplot(data = results, aes(x = Method, y = estimate, ymin = lower_CI, ymax = upper_CI)) + geom_pointrange() + theme_bw() + theme(legend.position = "none") + xlab("") + ylab(expression(tau[1])) + facet_wrap(.~Zipf, ncol = 3, scales = "free_y") + geom_hline(linetype="dotted", aes(yintercept=tau1))
 p
@@ -202,4 +202,6 @@ knitr::kable(results)
 
 # Lower part of Table 1
 # xtable(results[,1:8])
+
+results[,9:10]
 
