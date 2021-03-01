@@ -142,7 +142,7 @@ n <- 100000L
 # Initialization of the relevant quantities
 geom_params <- c(0.0001, 0.001)
 Method <- c("Sam.", "Beth.", "Sk.", "Cam.", "Pitman-Yor")
-N_param <- length(zipf_params)
+N_param <- length(geom_params)
 N_method <- length(Method)
 
 # Results
