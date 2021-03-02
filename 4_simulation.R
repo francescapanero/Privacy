@@ -8,7 +8,7 @@ N <- 1000000L # The "L" is crucial, otherwise it is not recognized as an integer
 n <- 100000L
 
 # Initialization of the relevant quantities
-zipf_params <- c(1.5, 1.75, 2)
+zipf_params <- c(rep(1.5, 100), rep(1.75,100), rep(2,100))
 Method <- c("NB", "PB-1", "PB-2", "NEB")
 N_param <- length(zipf_params)
 N_method <- length(Method)
@@ -16,19 +16,21 @@ N_method <- length(Method)
 # Results
 results <- NULL
 
+
+random$seed(0L)
+
+set.seed(123)  # Select the appropriate seed
+
 # Simulation
 for (i in 1:N_param) {
   
   # Setting the seed of the Python code
-  random$seed(0L)
 
   # Simulating the dataset from a Zipf law
   dataset <- dataset_creation_zipf(n = n, zipf_param = zipf_params[i], N = N)
   K_n <- dataset$K_n
   true_tau1 <- dataset$true_tau1
   m1 <- dataset$m1
-  
-  set.seed(123)  # Select the appropriate seed
   
   # Dirichlet process estimation
   out_DP <- max_EPPF_DP(dataset$frequencies)
@@ -54,9 +56,12 @@ for (i in 1:N_param) {
   results <- rbind(results, df)
 }
 
-results$Zipf <- paste("Power-law parameter:", results$Zipf)
 
-p <- ggplot(data = results, aes(x = Method, y = estimate, ymin = lower_CI, ymax = upper_CI)) + geom_pointrange() + theme_bw() + theme(legend.position = "none") + xlab("") + ylab(expression(tau[1])) + facet_wrap(.~Zipf, ncol = 3, scales = "free_y") + geom_hline(linetype="dotted", aes(yintercept=tau1))
+results$Zipf <- paste("Power-law c =", results$Zipf)
+results$Zipf <- factor(results$Zipf, levels = c("Power-law c = 2", "Power-law c = 1.75", "Power-law c = 1.5"))
+results$error <- results$estimate - results$tau1
+
+p <- ggplot(data = results, aes(x = Method, y = error)) + geom_boxplot() + theme_bw() + theme(legend.position = "none") + xlab("") + ylab(expression(tau[1] - hat(tau)[1])) + facet_wrap(.~Zipf, ncol = 3, scales = "free_y") #+ geom_hline(linetype="dotted", aes(yintercept=tau1))
 p
 
 # Save the plot, if needed
