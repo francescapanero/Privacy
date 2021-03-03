@@ -61,11 +61,11 @@ results$Zipf <- paste("Power-law c =", results$Zipf)
 results$Zipf <- factor(results$Zipf, levels = c("Power-law c = 2", "Power-law c = 1.75", "Power-law c = 1.5"))
 results$error <- results$estimate - results$tau1
 
-p <- ggplot(data = results, aes(x = Method, y = error)) + geom_boxplot() + theme_bw() + theme(legend.position = "none") + xlab("") + ylab(expression(tau[1] - hat(tau)[1])) + facet_wrap(.~Zipf, ncol = 3, scales = "free_y") #+ geom_hline(linetype="dotted", aes(yintercept=tau1))
+p <- ggplot(data = results, aes(x = Method, y = error)) + geom_boxplot() + theme_bw() + theme(legend.position = "none") + xlab("") + ylab(expression(hat(tau)[1] - tau[1])) + facet_wrap(.~Zipf, ncol = 3, scales = "free_y") + geom_hline(linetype="dotted", aes(yintercept=0))
 p
 
 # Save the plot, if needed
-ggsave(p, file = "img/zipf_fig1.eps", height = 0.75*3, width = 0.75*10, device = "eps")
+ggsave(p, file = "img/zipf_fig1.eps", height = 0.8*3, width = 0.8*10, device = "eps")
 
 # Upper part of Table 1 and Table 2: -----------------------------------
 # Compare estimation of PY, DP, B, S, C on different Zipf datasets
