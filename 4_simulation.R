@@ -8,7 +8,7 @@ N <- 1000000L # The "L" is crucial, otherwise it is not recognized as an integer
 n <- 100000L
 
 # Initialization of the relevant quantities
-zipf_params <- c(rep(1.5, 100), rep(1.75,100), rep(2,100))
+zipf_params <- c(rep(1.5, 1000), rep(1.75,1000), rep(2,1000))
 Method <- c("NB", "PB-1", "PB-2", "NEB")
 N_param <- length(zipf_params)
 N_method <- length(Method)
