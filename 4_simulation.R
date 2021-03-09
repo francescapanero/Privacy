@@ -57,8 +57,8 @@ for (i in 1:N_param) {
 }
 
 
-results$Zipf <- paste("Power-law c =", results$Zipf)
-results$Zipf <- factor(results$Zipf, levels = c("Power-law c = 2", "Power-law c = 1.75", "Power-law c = 1.5"))
+results$Zipf <- paste("Power-law param. =", results$Zipf)
+results$Zipf <- factor(results$Zipf, levels = c("Power-law param. = 2", "Power-law param. = 1.75", "Power-law param. = 1.5"))
 results$error <- results$estimate - results$tau1
 
 p <- ggplot(data = results, aes(x = Method, y = error)) + geom_boxplot() + theme_bw() + theme(legend.position = "none") + xlab("") + ylab(expression(hat(tau)[1] - tau[1])) + facet_wrap(.~Zipf, ncol = 3, scales = "free_y") + geom_hline(linetype="dotted", aes(yintercept=0))
