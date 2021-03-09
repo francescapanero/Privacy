@@ -103,7 +103,7 @@ tau1_py <- function(m1, n, theta, alpha, N) {
 }
 
 
-tau1_py_sim <- function(frequencies, theta, alpha, N, R = 1000, verbose = TRUE) {
+tau1_py_sim <- function(frequencies, theta, alpha, N, R = 10000, verbose = TRUE) {
 
   # Main quantities
   n <- sum(frequencies)
