@@ -16,10 +16,8 @@ N_method <- length(Method)
 # Results
 results <- NULL
 
-
-random$seed(0L)
-
-set.seed(123)  # Select the appropriate seed
+random$seed(10L) # Select the appropriate seed
+set.seed(123)  
 
 # Simulation
 for (i in 1:N_param) {
@@ -56,7 +54,6 @@ for (i in 1:N_param) {
   results <- rbind(results, df)
 }
 
-
 results$Zipf <- paste("Power-law param. =", results$Zipf)
 results$Zipf <- factor(results$Zipf, levels = c("Power-law param. = 2", "Power-law param. = 1.75", "Power-law param. = 1.5"))
 results$error <- results$estimate - results$tau1
@@ -81,12 +78,13 @@ N_method <- length(Method)
 
 # Results
 results <- NULL
+set.seed(123)
 
 # Performing the simulation
 for (i in 1:N_param) {
   
   # Setting the seed of the Python code
-  random$seed(0L)
+  random$seed(10L)
   
   # Simulating the dataset from a Zipf law
   dataset <- dataset_creation_zipf(n = n, zipf_param = zipf_params[i], N = N)

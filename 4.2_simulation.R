@@ -17,11 +17,13 @@ N_method <- length(Method)
 # Results
 results <- NULL
 
+set.seed(123)
+
 # Performing the simulation
 for (i in 1:N_param) {
   
   # Setting the seed of the Python code
-  random$seed(0L)
+  random$seed(10L)
   
   # Simulating the dataset from a Zipf law
   dataset <- dataset_creation_zipf(n = n, zipf_param = zipf_params[i], N = N)
@@ -77,7 +79,7 @@ results[,9:10]
 # Lower part of Table 1: ----------------------------------------------
 # Compare estimation of PY, DP, B, S, C on different Geometric datasets
 N <- 1000000L # The "L" is crucial, otherwise it is not recognized as an integer
-n <- 500L
+n <- 100L
 
 # Initialization of the relevant quantities
 geom_params <- c(0.0001, 0.001)
