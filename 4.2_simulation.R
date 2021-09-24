@@ -141,7 +141,6 @@ for (i in 1:N_param) {
 knitr::kable(results)
 
 # Lower part of Table 1
-# xtable(results[,1:8])
+xtable(results[,1:8], digits = 0)
 
 results[,9:10]
-

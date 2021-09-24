@@ -5,8 +5,8 @@ source("2_functions.R")
 # Upper part of Table : -----------------------------------
 # Compare estimation of PY, DP, B, S, C on different Zipf datasets
 
-N <- 1000L # The "L" is crucial, otherwise it is not recognized as an integer
-n <- 100L
+N <- 5000L # The "L" is crucial, otherwise it is not recognized as an integer
+n <- 500L
 
 # Initialization of the relevant quantities
 zipf_params <- c(1.25, 1.5, 1.75, 2)
@@ -70,15 +70,13 @@ for (i in 1:N_param) {
 
 knitr::kable(results)
 
-results[,9:10]
-
-# Upper part of Table 1
-# xtable(results[,1:8])
+xtable(results[,1:8], digits = 0)
+xtable(t(results[,9:10]))
 
 # Lower part of Table 1: ----------------------------------------------
 # Compare estimation of PY, DP, B, S, C on different Geometric datasets
-N <- 1000L # The "L" is crucial, otherwise it is not recognized as an integer
-n <- 100L
+N <- 5000L # The "L" is crucial, otherwise it is not recognized as an integer
+n <- 500L
 
 # Initialization of the relevant quantities
 geom_params <- c(0.0001, 0.001)
@@ -142,7 +140,7 @@ for (i in 1:N_param) {
 knitr::kable(results)
 
 # Lower part of Table 1
-# xtable(results[,1:8])
+xtable(results[,1:8], digits = 0)
 
 results[,9:10]
 
