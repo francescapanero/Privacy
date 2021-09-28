@@ -23,8 +23,8 @@ par(mfrow=c(1,2))
 contour(alpha, log(theta), llikvalues,
         xlab = expression(alpha), ylab = expression(log(theta)),
         levels = seq(from = 300, to = 1900, by = 300))
- plot(log(theta), tau1_dp(m1 = m1, n = n, theta = theta, N = N), type = "l", 
-     xlab = expression(log(theta)), ylab = expression(tau[1]))
+# plot(log(theta), tau1_dp(m1 = m1, n = n, theta = theta, N = N), type = "l", 
+#     xlab = expression(log(theta)), ylab = expression(tau[1]))
 
 N <- 1000 # The "L" is crucial, otherwise it is not recognized as an integer
 n <- 100
@@ -44,5 +44,5 @@ llikvalues <- matrix(llikvalues, nrow = length(alpha), ncol = length(theta), byr
 contour(alpha, log(theta), llikvalues,
         xlab = expression(alpha), ylab = expression(log(theta)),
         levels = seq(from = 0, to = 19, by = 1))
-plot(log(theta), tau1_dp(m1 = m1, n = n, theta = theta, N = N), type = "l", 
-     xlab = expression(log(theta)), ylab = expression(tau[1]))
+#plot(log(theta), tau1_dp(m1 = m1, n = n, theta = theta, N = N), type = "l", 
+#     xlab = expression(log(theta)), ylab = expression(tau[1]))
